@@ -1,5 +1,4 @@
 import QRCodeStyling from 'qr-code-styling';
-import { QRBTF } from 'qrbtf';
 
 // ===== VIKING QR APP CON TAB CLASSICO + SPERIMENTALE QRBTF =====
 class VikingQRApp {
