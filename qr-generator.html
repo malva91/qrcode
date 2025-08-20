@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Designer Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="title">⚔️ QR Forge Vichingo</h1>
+            <p class="subtitle">Forgia QR code degni di Valhalla</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Card Impostazioni -->
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h2>⚔️ Forgia del QR</h2>
+                </div>
+                
+                <div class="section">
+                    <label class="label">Testo/URL</label>
+                    <textarea id="qr-text" placeholder="https://esempio.com" rows="3">https://esempio.com</textarea>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">🎨 Design Template</h3>
+                    <div class="templates-grid">
+                        <button class="template-btn active" data-template="classic">
+                            <div class="template-preview classic-preview"></div>
+                            <span>Classico</span>
+                        </button>
+                        <button class="template-btn" data-template="rounded">
+                            <div class="template-preview rounded-preview"></div>
+                            <span>Arrotondato</span>
+                        </button>
+                        <button class="template-btn" data-template="dots">
+                            <div class="template-preview dots-preview"></div>
+                            <span>Punti</span>
+                        </button>
+                        <button class="template-btn" data-template="professional">
+                            <div class="template-preview professional-preview"></div>
+                            <span>Professionale</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">
+                                Dimensione: <span id="size-value">400</span>px
+                            </label>
+                            <input type="range" id="size" min="300" max="600" value="400" step="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">Colore Primario</label>
+                            <input type="color" id="foreground-color" value="#2c3e50">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Colore Sfondo</label>
+                            <input type="color" id="background-color" value="#ffffff">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">🖼️ Logo Centrale</h3>
+                    <div class="control-group">
+                        <button id="upload-logo-btn" class="btn-secondary">📁 Carica Logo</button>
+                        <div class="controls-grid" style="margin-top: 1rem;">
+                            <div class="control-group">
+                                <label class="label">Posizione Logo</label>
+                                <select id="logo-position">
+                                    <option value="center">Centro</option>
+                                    <option value="background">Sfondo Pattern</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="logo-preview" class="logo-preview-container">
+                            <span class="no-logo-text">Nessun logo caricato</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">⚙️ Impostazioni Logo</h3>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">
+                                Dimensione Logo: <span id="logo-scale-value">25</span>%
+                            </label>
+                            <input type="range" id="logo-scale" min="0.1" max="0.4" value="0.25" step="0.05">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">
+                                Margine: <span id="logo-margin-value">8</span>px
+                            </label>
+                            <input type="range" id="logo-margin" min="0" max="20" value="8" step="2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">🎭 Stile Avanzato</h3>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">Stile Moduli</label>
+                            <select id="dots-style">
+                                <option value="square">Quadrati</option>
+                                <option value="rounded">Arrotondati</option>
+                                <option value="dots">Punti</option>
+                                <option value="extra-rounded">Extra Arrotondati</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Stile Angoli</label>
+                            <select id="corners-style">
+                                <option value="square">Quadrati</option>
+                                <option value="dot">Punti</option>
+                                <option value="extra-rounded">Arrotondati</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <button id="reset-btn" class="btn-secondary">🔄 Reimposta</button>
+                </div>
+            </div>
+
+            <!-- Card Anteprima -->
+            <div class="card preview-card">
+                <div class="card-header">
+                    <h2>🛡️ Anteprima</h2>
+                </div>
+                
+                <div class="qr-preview">
+                    <div id="qr-container"></div>
+                </div>
+
+                <div class="scan-status" id="scan-status">
+                    <div class="status-icon">✅</div>
+                    <div class="status-text">QR Code generato</div>
+                </div>
+
+                <div class="button-group">
+                    <button id="download-png" class="btn-primary">📱 Scarica PNG</button>
+                    <button id="download-svg" class="btn-primary">🎨 Scarica SVG</button>
+                    <button id="test-scan" class="btn-secondary">🔍 Testa Scansione</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>⚔️ QR Forge Vichingo - Forgia QR code degni di Valhalla</p>
+        </footer>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

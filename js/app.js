@@ -256,17 +256,21 @@ class QRForgeVichingo {
                 qrOptions.image = this.config.logoImage;
             }
             
+            // Per modalità background pattern, non aggiungere il logo alle opzioni QR
+            if (this.config.logoImage && this.config.logoPosition === 'background') {
+                // Il pattern verrà applicato dopo la generazione
+            }
+            
             this.qrCode = new QRCodeStyling(qrOptions);
             
             const container = document.getElementById('qr-container');
             container.innerHTML = '';
             
-            // Se è modalità background pattern, creiamo il pattern dopo la generazione
+            this.qrCode.append(container);
+            
+            // Applica il pattern di sfondo se necessario
             if (this.config.logoImage && this.config.logoPosition === 'background') {
-                this.qrCode.append(container);
-                setTimeout(() => this.applyBackgroundPattern(container), 100);
-            } else {
-                this.qrCode.append(container);
+                setTimeout(() => this.applyBackgroundPattern(container), 200);
             }
             
             this.showStatus('success', '✅ QR Code generato correttamente');
@@ -278,70 +282,76 @@ class QRForgeVichingo {
     }
     
     applyBackgroundPattern(container) {
-        const svg = container.querySelector('svg');
-        if (!svg || !this.config.logoImage) return;
+        if (!this.config.logoImage) return;
         
-        // Crea un pattern SVG con il logo
-        const defs = svg.querySelector('defs') || document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        if (!svg.querySelector('defs')) {
-            svg.insertBefore(defs, svg.firstChild);
-        }
-        
-        // Rimuovi pattern esistenti
-        const existingPattern = defs.querySelector('#logoPattern');
-        if (existingPattern) {
-            existingPattern.remove();
-        }
-        
-        // Crea nuovo pattern
-        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-        pattern.id = 'logoPattern';
-        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-        pattern.setAttribute('width', '60');
-        pattern.setAttribute('height', '60');
-        pattern.setAttribute('opacity', '0.15');
-        
-        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        image.setAttribute('href', this.config.logoImage);
-        image.setAttribute('x', '10');
-        image.setAttribute('y', '10');
-        image.setAttribute('width', '40');
-        image.setAttribute('height', '40');
-        image.setAttribute('opacity', '0.3');
-        
-        pattern.appendChild(image);
-        defs.appendChild(pattern);
-        
-        // Applica il pattern al background
-        const backgroundRect = svg.querySelector('rect');
-        if (backgroundRect) {
-            backgroundRect.setAttribute('fill', 'url(#logoPattern)');
-        } else {
-            // Crea un rettangolo di sfondo se non esiste
-            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            rect.setAttribute('width', '100%');
-            rect.setAttribute('height', '100%');
-            rect.setAttribute('fill', 'url(#logoPattern)');
-            svg.insertBefore(rect, svg.firstChild.nextSibling);
-        }
-        
-        // Aggiungi anche un overlay con il colore di sfondo per controllare l'opacità
+        // Crea un canvas per il pattern personalizzato
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = this.config.width;
         canvas.height = this.config.height;
         
-        // Riempi con il colore di sfondo
+        // Riempi lo sfondo
         ctx.fillStyle = this.config.backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Aggiungi un overlay semi-trasparente
-        const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        overlay.setAttribute('width', '100%');
-        overlay.setAttribute('height', '100%');
-        overlay.setAttribute('fill', this.config.backgroundColor);
-        overlay.setAttribute('opacity', '0.8');
-        svg.appendChild(overlay);
+        // Carica l'immagine del logo
+        const logoImg = new Image();
+        logoImg.crossOrigin = 'anonymous';
+        logoImg.onload = () => {
+            // Calcola le dimensioni del pattern
+            const patternSize = 80;
+            const logoSize = patternSize * 0.6;
+            const logoOffset = (patternSize - logoSize) / 2;
+            
+            // Disegna il pattern del logo
+            for (let x = 0; x < canvas.width; x += patternSize) {
+                for (let y = 0; y < canvas.height; y += patternSize) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.15; // Trasparenza per non interferire con il QR
+                    ctx.drawImage(logoImg, x + logoOffset, y + logoOffset, logoSize, logoSize);
+                    ctx.restore();
+                }
+            }
+            
+            // Sostituisci il contenuto del container con il canvas personalizzato
+            const existingQR = container.querySelector('canvas, svg');
+            if (existingQR) {
+                // Crea un nuovo canvas che combina pattern e QR
+                const finalCanvas = document.createElement('canvas');
+                const finalCtx = finalCanvas.getContext('2d');
+                finalCanvas.width = this.config.width;
+                finalCanvas.height = this.config.height;
+                
+                // Disegna prima il pattern di sfondo
+                finalCtx.drawImage(canvas, 0, 0);
+                
+                // Poi disegna il QR code sopra
+                if (existingQR.tagName === 'CANVAS') {
+                    finalCtx.drawImage(existingQR, 0, 0);
+                } else if (existingQR.tagName === 'svg') {
+                    // Converti SVG in canvas
+                    const svgData = new XMLSerializer().serializeToString(existingQR);
+                    const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                    const svgUrl = URL.createObjectURL(svgBlob);
+                    const svgImg = new Image();
+                    svgImg.onload = () => {
+                        finalCtx.drawImage(svgImg, 0, 0);
+                        URL.revokeObjectURL(svgUrl);
+                        
+                        // Sostituisci il QR originale con quello combinato
+                        container.innerHTML = '';
+                        container.appendChild(finalCanvas);
+                    };
+                    svgImg.src = svgUrl;
+                    return;
+                }
+                
+                // Sostituisci il QR originale con quello combinato
+                container.innerHTML = '';
+                container.appendChild(finalCanvas);
+            }
+        };
+        logoImg.src = this.config.logoImage;
     }
     
     downloadPNG() {
