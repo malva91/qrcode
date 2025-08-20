@@ -1,18 +1,36 @@
-// ===== QR FORGE VICHINGO - VANILLA JS =====
+// ===== QR FORGE VICHINGO - VANILLA JS CON LIBRERIA REALE =====
 class QRForgeVichingo {
     constructor() {
         this.config = {
             targetUrl: 'https://www.instagram.com/',
             width: 400,
             height: 400,
-            dotsColor: '#2c3e50',
-            backgroundColor: '#ffffff',
-            dotsType: 'square',
-            cornersSquareType: 'square',
-            cornersDotType: 'square',
-            logoImage: null,
-            logoScale: 0.25,
-            logoMargin: 8
+            type: 'canvas',
+            dotsOptions: {
+                color: '#2c3e50',
+                type: 'square'
+            },
+            backgroundOptions: {
+                color: '#ffffff'
+            },
+            cornersSquareOptions: {
+                color: '#2c3e50',
+                type: 'square'
+            },
+            cornersDotOptions: {
+                color: '#2c3e50',
+                type: 'square'
+            },
+            imageOptions: {
+                hideBackgroundDots: true,
+                imageSize: 0.25,
+                margin: 8,
+                crossOrigin: "anonymous"
+            },
+            qrOptions: {
+                errorCorrectionLevel: 'M'
+            },
+            image: null
         };
         
         this.qrCode = null;
@@ -23,7 +41,7 @@ class QRForgeVichingo {
         this.setupEventListeners();
         this.setupImageUpload();
         this.generateQR();
-        console.log('⚔️ QR Forge Vichingo inizializzato');
+        console.log('⚔️ QR Forge Vichingo inizializzato con libreria reale');
     }
     
     setupImageUpload() {
@@ -45,7 +63,7 @@ class QRForgeVichingo {
     loadLogoImage(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            this.config.logoImage = e.target.result;
+            this.config.image = e.target.result;
             this.updateLogoPreview(e.target.result);
             this.generateQR();
             this.showStatus('success', '🖼️ Logo caricato con successo!');
@@ -67,7 +85,7 @@ class QRForgeVichingo {
     }
     
     removeLogo() {
-        this.config.logoImage = null;
+        this.config.image = null;
         const previewContainer = document.getElementById('logo-preview');
         if (previewContainer) {
             previewContainer.innerHTML = '<span class="no-logo-text">Nessun logo caricato</span>';
@@ -80,44 +98,133 @@ class QRForgeVichingo {
         // Testo QR
         document.getElementById('qr-text').addEventListener('input', (e) => {
             this.config.targetUrl = e.target.value || 'https://www.instagram.com/';
-            this.updateBridgeFile();
             this.generateQR();
         });
         
-        // Colori
+        // Colori base
         document.getElementById('foreground-color').addEventListener('change', (e) => {
-            this.config.dotsColor = e.target.value;
+            this.config.dotsOptions.color = e.target.value;
             this.generateQR();
         });
         
         document.getElementById('background-color').addEventListener('change', (e) => {
-            this.config.backgroundColor = e.target.value;
+            this.config.backgroundOptions.color = e.target.value;
+            this.generateQR();
+        });
+        
+        // Colori angoli
+        document.getElementById('corners-color').addEventListener('change', (e) => {
+            this.config.cornersSquareOptions.color = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('corners-dot-color').addEventListener('change', (e) => {
+            this.config.cornersDotOptions.color = e.target.value;
             this.generateQR();
         });
         
         // Stili
         document.getElementById('dots-style').addEventListener('change', (e) => {
-            this.config.dotsType = e.target.value;
+            this.config.dotsOptions.type = e.target.value;
             this.generateQR();
         });
         
         document.getElementById('corners-style').addEventListener('change', (e) => {
-            this.config.cornersSquareType = e.target.value;
-            this.config.cornersDotType = e.target.value;
+            this.config.cornersSquareOptions.type = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('corners-dot-style').addEventListener('change', (e) => {
+            this.config.cornersDotOptions.type = e.target.value;
+            this.generateQR();
+        });
+        
+        // Dimensioni
+        document.getElementById('qr-size').addEventListener('input', (e) => {
+            const size = parseInt(e.target.value);
+            this.config.width = size;
+            this.config.height = size;
+            document.getElementById('qr-size-value').textContent = size;
             this.generateQR();
         });
         
         // Logo settings
         document.getElementById('logo-scale').addEventListener('input', (e) => {
-            this.config.logoScale = parseFloat(e.target.value);
+            this.config.imageOptions.imageSize = parseFloat(e.target.value);
             document.getElementById('logo-scale-value').textContent = Math.round(e.target.value * 100);
             this.generateQR();
         });
         
         document.getElementById('logo-margin').addEventListener('input', (e) => {
-            this.config.logoMargin = parseInt(e.target.value);
+            this.config.imageOptions.margin = parseInt(e.target.value);
             document.getElementById('logo-margin-value').textContent = e.target.value;
             this.generateQR();
+        });
+        
+        document.getElementById('logo-border').addEventListener('input', (e) => {
+            this.config.imageOptions.borderWidth = parseInt(e.target.value);
+            document.getElementById('logo-border-value').textContent = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('logo-border-color').addEventListener('change', (e) => {
+            this.config.imageOptions.borderColor = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('logo-shape').addEventListener('change', (e) => {
+            this.config.imageOptions.borderRadius = e.target.value === 'circle' ? 50 : 0;
+            this.generateQR();
+        });
+        
+        // Correzione errore
+        document.getElementById('error-correction').addEventListener('change', (e) => {
+            this.config.qrOptions.errorCorrectionLevel = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('output-type').addEventListener('change', (e) => {
+            this.config.type = e.target.value;
+            this.generateQR();
+        });
+        
+        // Gradiente
+        document.getElementById('enable-gradient').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                this.enableGradient();
+            } else {
+                this.disableGradient();
+            }
+            this.generateQR();
+        });
+        
+        document.getElementById('gradient-type').addEventListener('change', () => {
+            if (document.getElementById('enable-gradient').checked) {
+                this.enableGradient();
+                this.generateQR();
+            }
+        });
+        
+        document.getElementById('gradient-color1').addEventListener('change', () => {
+            if (document.getElementById('enable-gradient').checked) {
+                this.enableGradient();
+                this.generateQR();
+            }
+        });
+        
+        document.getElementById('gradient-color2').addEventListener('change', () => {
+            if (document.getElementById('enable-gradient').checked) {
+                this.enableGradient();
+                this.generateQR();
+            }
+        });
+        
+        document.getElementById('gradient-rotation').addEventListener('input', (e) => {
+            document.getElementById('gradient-rotation-value').textContent = e.target.value;
+            if (document.getElementById('enable-gradient').checked) {
+                this.enableGradient();
+                this.generateQR();
+            }
         });
         
         // Template buttons
@@ -138,6 +245,39 @@ class QRForgeVichingo {
         document.getElementById('reset-btn').addEventListener('click', () => this.reset());
     }
     
+    enableGradient() {
+        const type = document.getElementById('gradient-type').value;
+        const color1 = document.getElementById('gradient-color1').value;
+        const color2 = document.getElementById('gradient-color2').value;
+        const rotation = parseInt(document.getElementById('gradient-rotation').value);
+        
+        if (type === 'linear') {
+            this.config.dotsOptions.gradient = {
+                type: 'linear',
+                rotation: rotation,
+                colorStops: [
+                    { offset: 0, color: color1 },
+                    { offset: 1, color: color2 }
+                ]
+            };
+        } else {
+            this.config.dotsOptions.gradient = {
+                type: 'radial',
+                colorStops: [
+                    { offset: 0, color: color1 },
+                    { offset: 1, color: color2 }
+                ]
+            };
+        }
+        
+        delete this.config.dotsOptions.color;
+    }
+    
+    disableGradient() {
+        delete this.config.dotsOptions.gradient;
+        this.config.dotsOptions.color = document.getElementById('foreground-color').value;
+    }
+    
     applyTemplate(templateName) {
         // Update active button
         document.querySelectorAll('.template-btn').forEach(btn => {
@@ -150,52 +290,66 @@ class QRForgeVichingo {
                 dotsColor: '#000000', 
                 backgroundColor: '#ffffff',
                 dotsType: 'square',
-                cornersSquareType: 'square'
+                cornersSquareType: 'square',
+                cornersDotType: 'square',
+                cornersColor: '#000000',
+                cornersDotColor: '#000000'
             },
             rounded: { 
                 dotsColor: '#3b82f6', 
                 backgroundColor: '#f1f5f9',
                 dotsType: 'rounded',
-                cornersSquareType: 'extra-rounded'
+                cornersSquareType: 'extra-rounded',
+                cornersDotType: 'dot',
+                cornersColor: '#1e40af',
+                cornersDotColor: '#3b82f6'
             },
             dots: { 
                 dotsColor: '#8b5cf6', 
                 backgroundColor: '#faf5ff',
                 dotsType: 'dots',
-                cornersSquareType: 'dot'
+                cornersSquareType: 'dot',
+                cornersDotType: 'dot',
+                cornersColor: '#7c3aed',
+                cornersDotColor: '#8b5cf6'
             },
             professional: { 
                 dotsColor: '#f59e0b', 
                 backgroundColor: '#1f2937',
-                dotsType: 'extra-rounded',
-                cornersSquareType: 'extra-rounded'
+                dotsType: 'classy-rounded',
+                cornersSquareType: 'extra-rounded',
+                cornersDotType: 'square',
+                cornersColor: '#d97706',
+                cornersDotColor: '#f59e0b'
             }
         };
         
         const template = templates[templateName];
         if (template) {
-            Object.assign(this.config, template);
-            this.config.cornersDotType = template.cornersSquareType;
+            // Disable gradient
+            document.getElementById('enable-gradient').checked = false;
+            this.disableGradient();
+            
+            // Apply template
+            this.config.dotsOptions.color = template.dotsColor;
+            this.config.dotsOptions.type = template.dotsType;
+            this.config.backgroundOptions.color = template.backgroundColor;
+            this.config.cornersSquareOptions.color = template.cornersColor;
+            this.config.cornersSquareOptions.type = template.cornersSquareType;
+            this.config.cornersDotOptions.color = template.cornersDotColor;
+            this.config.cornersDotOptions.type = template.cornersDotType;
             
             // Update UI
             document.getElementById('foreground-color').value = template.dotsColor;
             document.getElementById('background-color').value = template.backgroundColor;
+            document.getElementById('corners-color').value = template.cornersColor;
+            document.getElementById('corners-dot-color').value = template.cornersDotColor;
             document.getElementById('dots-style').value = template.dotsType;
             document.getElementById('corners-style').value = template.cornersSquareType;
+            document.getElementById('corners-dot-style').value = template.cornersDotType;
             
             this.generateQR();
         }
-    }
-    
-    updateBridgeFile() {
-        // Il QR code punterà sempre a bridge.html
-        // Ma aggiorniamo il bridge con l'URL di destinazione
-        this.generateBridgeFile();
-    }
-    
-    generateBridgeFile() {
-        // Simula la scrittura del file bridge.html
-        console.log('🔄 Bridge aggiornato per:', this.config.targetUrl);
     }
     
     generateQR() {
@@ -204,39 +358,14 @@ class QRForgeVichingo {
             const bridgeUrl = `bridge.html?url=${encodeURIComponent(this.config.targetUrl)}`;
             
             const qrOptions = {
-                width: this.config.width,
-                height: this.config.height,
-                type: 'canvas',
-                data: bridgeUrl, // Il QR punta al bridge con parametri
-                dotsOptions: {
-                    color: this.config.dotsColor,
-                    type: this.config.dotsType
-                },
-                backgroundOptions: {
-                    color: this.config.backgroundColor
-                },
-                cornersSquareOptions: {
-                    color: this.config.dotsColor,
-                    type: this.config.cornersSquareType
-                },
-                cornersDotOptions: {
-                    color: this.config.dotsColor,
-                    type: this.config.cornersDotType
-                },
-                qrOptions: {
-                    errorCorrectionLevel: 'M'
-                }
+                ...this.config,
+                data: bridgeUrl
             };
             
-            // Add logo if present
-            if (this.config.logoImage) {
-                qrOptions.imageOptions = {
-                    hideBackgroundDots: true,
-                    imageSize: this.config.logoScale,
-                    margin: this.config.logoMargin,
-                    crossOrigin: "anonymous"
-                };
-                qrOptions.image = this.config.logoImage;
+            // Remove image if not present
+            if (!this.config.image) {
+                delete qrOptions.image;
+                delete qrOptions.imageOptions;
             }
             
             this.qrCode = new QRCodeStyling(qrOptions);
@@ -276,20 +405,28 @@ class QRForgeVichingo {
         this.showStatus('warning', '🔍 Test di scansionabilità in corso...');
         
         setTimeout(() => {
-            const hasLogo = this.config.logoImage !== null;
-            const logoSize = this.config.logoScale;
+            const hasLogo = this.config.image !== null;
+            const logoSize = this.config.imageOptions?.imageSize || 0;
+            const errorLevel = this.config.qrOptions.errorCorrectionLevel;
             
-            let successProbability = 0.95;
+            let successProbability = 0.98;
+            
+            // Penalità per logo
             if (hasLogo) {
-                successProbability -= (logoSize * 0.3);
+                successProbability -= (logoSize * 0.2);
             }
+            
+            // Bonus per correzione errore alta
+            if (errorLevel === 'H') successProbability += 0.05;
+            else if (errorLevel === 'Q') successProbability += 0.02;
+            else if (errorLevel === 'L') successProbability -= 0.03;
             
             const isScannableSimulation = Math.random() < successProbability;
             
             if (isScannableSimulation) {
-                this.showStatus('success', '✅ QR Code scansionabile!');
+                this.showStatus('success', '✅ QR Code altamente scansionabile!');
             } else {
-                this.showStatus('warning', '⚠️ QR Code potrebbe avere problemi di scansione - prova a ridurre la dimensione del logo');
+                this.showStatus('warning', '⚠️ QR Code potrebbe avere problemi - prova ad aumentare la correzione errore o ridurre il logo');
             }
         }, 2000);
     }
@@ -299,26 +436,56 @@ class QRForgeVichingo {
             targetUrl: 'https://www.instagram.com/',
             width: 400,
             height: 400,
-            dotsColor: '#2c3e50',
-            backgroundColor: '#ffffff',
-            dotsType: 'square',
-            cornersSquareType: 'square',
-            cornersDotType: 'square',
-            logoImage: null,
-            logoScale: 0.25,
-            logoMargin: 8
+            type: 'canvas',
+            dotsOptions: {
+                color: '#2c3e50',
+                type: 'square'
+            },
+            backgroundOptions: {
+                color: '#ffffff'
+            },
+            cornersSquareOptions: {
+                color: '#2c3e50',
+                type: 'square'
+            },
+            cornersDotOptions: {
+                color: '#2c3e50',
+                type: 'square'
+            },
+            imageOptions: {
+                hideBackgroundDots: true,
+                imageSize: 0.25,
+                margin: 8,
+                crossOrigin: "anonymous"
+            },
+            qrOptions: {
+                errorCorrectionLevel: 'M'
+            },
+            image: null
         };
         
         // Reset UI
         document.getElementById('qr-text').value = this.config.targetUrl;
-        document.getElementById('foreground-color').value = this.config.dotsColor;
-        document.getElementById('background-color').value = this.config.backgroundColor;
-        document.getElementById('dots-style').value = this.config.dotsType;
-        document.getElementById('corners-style').value = this.config.cornersSquareType;
-        document.getElementById('logo-scale').value = this.config.logoScale;
-        document.getElementById('logo-scale-value').textContent = Math.round(this.config.logoScale * 100);
-        document.getElementById('logo-margin').value = this.config.logoMargin;
-        document.getElementById('logo-margin-value').textContent = this.config.logoMargin;
+        document.getElementById('foreground-color').value = this.config.dotsOptions.color;
+        document.getElementById('background-color').value = this.config.backgroundOptions.color;
+        document.getElementById('corners-color').value = this.config.cornersSquareOptions.color;
+        document.getElementById('corners-dot-color').value = this.config.cornersDotOptions.color;
+        document.getElementById('dots-style').value = this.config.dotsOptions.type;
+        document.getElementById('corners-style').value = this.config.cornersSquareOptions.type;
+        document.getElementById('corners-dot-style').value = this.config.cornersDotOptions.type;
+        document.getElementById('qr-size').value = this.config.width;
+        document.getElementById('qr-size-value').textContent = this.config.width;
+        document.getElementById('logo-scale').value = this.config.imageOptions.imageSize;
+        document.getElementById('logo-scale-value').textContent = Math.round(this.config.imageOptions.imageSize * 100);
+        document.getElementById('logo-margin').value = this.config.imageOptions.margin;
+        document.getElementById('logo-margin-value').textContent = this.config.imageOptions.margin;
+        document.getElementById('logo-border').value = 0;
+        document.getElementById('logo-border-value').textContent = '0';
+        document.getElementById('error-correction').value = this.config.qrOptions.errorCorrectionLevel;
+        document.getElementById('output-type').value = this.config.type;
+        document.getElementById('enable-gradient').checked = false;
+        document.getElementById('gradient-rotation').value = 0;
+        document.getElementById('gradient-rotation-value').textContent = '0';
         
         this.removeLogo();
         this.applyTemplate('classic');

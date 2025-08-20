@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/styles.css">
-    <script src="lib/qr-code-styling.min.js"></script>
+    <script src="https://unpkg.com/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
 </head>
 <body>
     <div class="container">
@@ -62,6 +62,16 @@
                             <label class="label">Colore Sfondo</label>
                             <input type="color" id="background-color" value="#ffffff">
                         </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Colore Angoli</label>
+                            <input type="color" id="corners-color" value="#2c3e50">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Colore Punti Angoli</label>
+                            <input type="color" id="corners-dot-color" value="#2c3e50">
+                        </div>
                     </div>
                 </div>
 
@@ -74,6 +84,16 @@
                                 <label class="label">Modalità Logo</label>
                                 <select id="logo-mode">
                                     <option value="center">Centro Classico</option>
+                                    <option value="corner">Angolo</option>
+                                    <option value="background">Sfondo</option>
+                                </select>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label class="label">Forma Logo</label>
+                                <select id="logo-shape">
+                                    <option value="square">Quadrato</option>
+                                    <option value="circle">Cerchio</option>
                                 </select>
                             </div>
                         </div>
@@ -99,6 +119,18 @@
                             </label>
                             <input type="range" id="logo-margin" min="0" max="20" value="8" step="2">
                         </div>
+                        
+                        <div class="control-group">
+                            <label class="label">
+                                Bordo Logo: <span id="logo-border-value">0</span>px
+                            </label>
+                            <input type="range" id="logo-border" min="0" max="10" value="0" step="1">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Colore Bordo Logo</label>
+                            <input type="color" id="logo-border-color" value="#ffffff">
+                        </div>
                     </div>
                 </div>
 
@@ -112,7 +144,8 @@
                                 <option value="rounded">Arrotondati</option>
                                 <option value="dots">Punti</option>
                                 <option value="extra-rounded">Extra Arrotondati</option>
-                                <option value="diamond">Diamanti</option>
+                                <option value="classy">Elegante</option>
+                                <option value="classy-rounded">Elegante Arrotondato</option>
                             </select>
                         </div>
                         
@@ -123,6 +156,80 @@
                                 <option value="dot">Punti</option>
                                 <option value="extra-rounded">Arrotondati</option>
                             </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Stile Punti Angoli</label>
+                            <select id="corners-dot-style">
+                                <option value="square">Quadrati</option>
+                                <option value="dot">Punti</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">
+                                Dimensione QR: <span id="qr-size-value">400</span>px
+                            </label>
+                            <input type="range" id="qr-size" min="300" max="800" value="400" step="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">🔧 Correzione Errore</h3>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">Livello Correzione</label>
+                            <select id="error-correction">
+                                <option value="L">L - 7% (Veloce)</option>
+                                <option value="M" selected>M - 15% (Bilanciato)</option>
+                                <option value="Q">Q - 25% (Robusto)</option>
+                                <option value="H">H - 30% (Massimo)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Tipo Output</label>
+                            <select id="output-type">
+                                <option value="canvas">Canvas</option>
+                                <option value="svg">SVG</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">🎨 Gradiente</h3>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">
+                                <input type="checkbox" id="enable-gradient"> Abilita Gradiente
+                            </label>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Tipo Gradiente</label>
+                            <select id="gradient-type">
+                                <option value="linear">Lineare</option>
+                                <option value="radial">Radiale</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Colore Gradiente 1</label>
+                            <input type="color" id="gradient-color1" value="#3b82f6">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Colore Gradiente 2</label>
+                            <input type="color" id="gradient-color2" value="#8b5cf6">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">
+                                Rotazione: <span id="gradient-rotation-value">0</span>°
+                            </label>
+                            <input type="range" id="gradient-rotation" min="0" max="360" value="0" step="15">
                         </div>
                     </div>
                 </div>
