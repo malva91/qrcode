@@ -15,7 +15,7 @@ class VikingQRApp {
             classic: { fg: '#000000', bg: '#FFFFFF', name: 'Classico' },
             viking: { fg: '#8B4513', bg: '#F5F5DC', name: 'Legno & Osso' },
             ice: { fg: '#2F4F4F', bg: '#B0E0E6', name: 'Ghiaccio Nordico' },
-            runes: { fg: '#CD853F', bg: '#1a1a1a', name: 'Rune Dorate' }
+            runes: { fg: '#CD853F', bg: '#1a1a1a', name: 'Rune Sacre' }
         };
         
         this.init();
@@ -129,12 +129,13 @@ class VikingQRApp {
         
         // Salva il contesto
         ctx.save();
-        
+        // Decorazioni runiche e vichinghe
         // Bordo decorativo vichingo
         this.drawVikingBorder(ctx, size, margin);
         
         // Angoli decorativi
         this.drawVikingCorners(ctx, size, margin);
+        this.drawRunicSymbols(ctx, size, margin);
         
         // Ripristina il contesto
         ctx.restore();
@@ -200,6 +201,87 @@ class VikingQRApp {
             
             ctx.restore();
         });
+    }
+    
+    drawRunicSymbols(ctx, size, margin) {
+        const runeSize = margin * 0.5;
+        const runeColor = this.config.foregroundColor;
+        
+        ctx.strokeStyle = runeColor;
+        ctx.fillStyle = runeColor;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        
+        // Rune sui lati del QR code
+        const runes = [
+            // Runa Fehu (ricchezza) - lato superiore
+            { x: size/2, y: margin/3, paths: [[[0,-8],[0,8]],[[0,-8],[6,-2]],[[0,2],[6,8]]] },
+            // Runa Uruz (forza) - lato destro  
+            { x: size - margin/3, y: size/2, paths: [[[8,0],[-8,0]],[[8,0],[2,-6]],[[8,0],[2,6]],[[-2,-6],[-2,6]]] },
+            // Runa Thurisaz (protezione) - lato inferiore
+            { x: size/2, y: size - margin/3, paths: [[[0,-8],[0,8]],[[0,-4],[6,0]],[[0,4],[6,0]]] },
+            // Runa Ansuz (saggezza) - lato sinistro
+            { x: margin/3, y: size/2, paths: [[[-8,0],[8,0]],[[-2,-6],[2,-2]],[[-2,6],[2,2]]] }
+        ];
+        
+        runes.forEach(rune => {
+            ctx.save();
+            ctx.translate(rune.x, rune.y);
+            
+            rune.paths.forEach(path => {
+                ctx.beginPath();
+                ctx.moveTo(path[0][0], path[0][1]);
+                for(let i = 1; i < path.length; i++) {
+                    ctx.lineTo(path[i][0], path[i][1]);
+                }
+                ctx.stroke();
+            });
+            
+            ctx.restore();
+        });
+        
+        // Cerchio runico attorno al QR (opzionale per preset "runes")
+        if (this.config.foregroundColor === '#CD853F') {
+            this.drawRunicCircle(ctx, size);
+        }
+    }
+    
+    drawRunicCircle(ctx, size) {
+        const centerX = size / 2;
+        const centerY = size / 2;
+        const radius = size * 0.45;
+        
+        ctx.strokeStyle = this.config.foregroundColor;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        ctx.setLineDash([]);
+        
+        // Piccoli simboli runici sul cerchio
+        const numSymbols = 8;
+        for(let i = 0; i < numSymbols; i++) {
+            const angle = (i * 2 * Math.PI) / numSymbols;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle + Math.PI/2);
+            
+            // Piccola runa
+            ctx.beginPath();
+            ctx.moveTo(0, -3);
+            ctx.lineTo(0, 3);
+            ctx.moveTo(-2, -1);
+            ctx.lineTo(2, 1);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
     }
     
     downloadPNG() {
