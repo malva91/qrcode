@@ -9,9 +9,6 @@ export class SimpleQR {
     } = options;
 
     try {
-      // Usa la libreria qrcode per generare il QR
-      const QRCode = window.QRCode || require('qrcode');
-      
       // Genera il QR code come matrice
       const qr = this.createQRMatrix(text, errorCorrection);
       
