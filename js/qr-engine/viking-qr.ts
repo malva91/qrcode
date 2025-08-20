@@ -1,6 +1,6 @@
 import { QRGenerator } from './qr-generator.js';
 import { RuneRenderer } from './rune-renderer.js';
-import { VikingQROptions } from './types.js';
+import type { VikingQROptions } from './types.js';
 
 export class VikingQR {
   static generateSVG(text: string, options: VikingQROptions = {}): string {
@@ -79,5 +79,5 @@ export class VikingQR {
 }
 
 // Export per compatibilità
-export { VikingQROptions } from './types.js';
+export type { VikingQROptions } from './types.js';
 export default VikingQR;
