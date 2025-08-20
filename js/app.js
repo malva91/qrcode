@@ -220,12 +220,6 @@ class QRForgeVichingo {
     
     generateQR() {
         try {
-            // Se il logo è in modalità background pattern, creiamo un pattern
-            let backgroundImage = null;
-            if (this.config.logoImage && this.config.logoPosition === 'background') {
-                backgroundImage = this.createLogoPattern();
-            }
-            
             const qrOptions = {
                 width: this.config.width,
                 height: this.config.height,
@@ -236,8 +230,7 @@ class QRForgeVichingo {
                     type: this.config.dotsType
                 },
                 backgroundOptions: {
-                    color: this.config.backgroundColor,
-                    ...(backgroundImage && { gradient: backgroundImage })
+                    color: this.config.backgroundColor
                 },
                 cornersSquareOptions: {
                     color: this.config.dotsColor,
@@ -267,7 +260,14 @@ class QRForgeVichingo {
             
             const container = document.getElementById('qr-container');
             container.innerHTML = '';
-            this.qrCode.append(container);
+            
+            // Se è modalità background pattern, creiamo il pattern dopo la generazione
+            if (this.config.logoImage && this.config.logoPosition === 'background') {
+                this.qrCode.append(container);
+                setTimeout(() => this.applyBackgroundPattern(container), 100);
+            } else {
+                this.qrCode.append(container);
+            }
             
             this.showStatus('success', '✅ QR Code generato correttamente');
             
@@ -277,28 +277,71 @@ class QRForgeVichingo {
         }
     }
     
-    createLogoPattern() {
-        // Crea un pattern con il logo come sfondo
+    applyBackgroundPattern(container) {
+        const svg = container.querySelector('svg');
+        if (!svg || !this.config.logoImage) return;
+        
+        // Crea un pattern SVG con il logo
+        const defs = svg.querySelector('defs') || document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        if (!svg.querySelector('defs')) {
+            svg.insertBefore(defs, svg.firstChild);
+        }
+        
+        // Rimuovi pattern esistenti
+        const existingPattern = defs.querySelector('#logoPattern');
+        if (existingPattern) {
+            existingPattern.remove();
+        }
+        
+        // Crea nuovo pattern
+        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+        pattern.id = 'logoPattern';
+        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+        pattern.setAttribute('width', '60');
+        pattern.setAttribute('height', '60');
+        pattern.setAttribute('opacity', '0.15');
+        
+        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        image.setAttribute('href', this.config.logoImage);
+        image.setAttribute('x', '10');
+        image.setAttribute('y', '10');
+        image.setAttribute('width', '40');
+        image.setAttribute('height', '40');
+        image.setAttribute('opacity', '0.3');
+        
+        pattern.appendChild(image);
+        defs.appendChild(pattern);
+        
+        // Applica il pattern al background
+        const backgroundRect = svg.querySelector('rect');
+        if (backgroundRect) {
+            backgroundRect.setAttribute('fill', 'url(#logoPattern)');
+        } else {
+            // Crea un rettangolo di sfondo se non esiste
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('width', '100%');
+            rect.setAttribute('height', '100%');
+            rect.setAttribute('fill', 'url(#logoPattern)');
+            svg.insertBefore(rect, svg.firstChild.nextSibling);
+        }
+        
+        // Aggiungi anche un overlay con il colore di sfondo per controllare l'opacità
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = 100;
-        canvas.height = 100;
+        canvas.width = this.config.width;
+        canvas.height = this.config.height;
         
-        const img = new Image();
-        img.onload = () => {
-            ctx.globalAlpha = 0.1;
-            ctx.drawImage(img, 0, 0, 100, 100);
-        };
-        img.src = this.config.logoImage;
+        // Riempi con il colore di sfondo
+        ctx.fillStyle = this.config.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        return {
-            type: 'radial',
-            rotation: 0,
-            colorStops: [
-                { offset: 0, color: this.config.backgroundColor },
-                { offset: 1, color: this.config.backgroundColor }
-            ]
-        };
+        // Aggiungi un overlay semi-trasparente
+        const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        overlay.setAttribute('width', '100%');
+        overlay.setAttribute('height', '100%');
+        overlay.setAttribute('fill', this.config.backgroundColor);
+        overlay.setAttribute('opacity', '0.8');
+        svg.appendChild(overlay);
     }
     
     downloadPNG() {
