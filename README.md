@@ -73,10 +73,10 @@ Il sistema è ottimizzato per mantenere la compatibilità con:
 ## 🏗️ Architettura
 
 ### Tecnologie Utilizzate
-- **qr-code-styling**: Libreria principale per generazione QR
-- **Vite**: Build tool e dev server
+- **QR Code Styling**: Libreria custom per generazione QR
+- **Vanilla JavaScript**: Nessun framework, solo JS puro
 - **CSS Custom Properties**: Sistema di design modulare
-- **ES6 Modules**: Architettura JavaScript moderna
+- **HTML5 Canvas**: Rendering QR code
 
 ### Funzionalità Principali
 - Generazione QR in tempo reale
@@ -122,14 +122,13 @@ MIT License - Libero per uso commerciale e personale.
 ## 🛠️ Sviluppo
 
 ```bash
-# Installa dipendenze
-npm install
+# Avvia server locale (Python)
+npm run start
+# oppure
+python -m http.server 8000
 
-# Avvia server di sviluppo
-npm run dev
-
-# Build per produzione
-npm run build
+# Apri nel browser
+# http://localhost:8000
 ```
 
 ## 🎯 Roadmap
