@@ -1,4 +1,4 @@
-import { VikingQR } from './qr-engine/viking-qr.js';
+import { VikingQR } from './qr-engine/viking-qr.ts';
 
 // ===== VIKING QR FORGE - VERSIONE SEMPLIFICATA =====
 class VikingQRApp {
