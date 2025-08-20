@@ -1,4 +1,4 @@
-import QRCodeStyling from 'qr-code-styling';
+import QRCodeStyling from '../node_modules/qr-code-styling/lib/qr-code-styling.js';
 
 // ===== QR FORGE VICHINGO =====
 class QRForgeVichingo {
