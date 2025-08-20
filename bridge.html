@@ -128,8 +128,17 @@
     <img src="logocani.png" alt="I Cani Di Odino" class="logo">
     <h1 class="title">I CANI DI ODINO</h1>
     <p class="subtitle">Benvenuto nella nostra pagina ufficiale</p>
-    <button class="cta-button" onclick="window.open('https://www.esempio.com', '_blank')">
-        VISITA IL SITO
-    </button>
+    
+    <script>
+        // Reindirizzamento automatico dopo 3 secondi
+        setTimeout(() => {
+            window.location.href = 'https://www.esempio.com';
+        }, 3000);
+        
+        // Opzione per saltare l'attesa
+        document.addEventListener('click', () => {
+            window.location.href = 'https://www.esempio.com';
+        });
+    </script>
 </body>
 </html>

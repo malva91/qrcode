@@ -356,8 +356,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .remove-logo-btn {
-  margin-left: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm);
+  margin-left: 10px;
+  padding: 5px 10px;
   font-size: 0.8rem;
   min-height: auto;
 }

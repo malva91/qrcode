@@ -7,8 +7,6 @@ class QRForgeVichingo {
             text: 'bridge.html',
             width: 400,
             height: 400,
-            type: 'svg',
-            errorCorrectionLevel: 'M',
             dotsColor: '#2c3e50',
             backgroundColor: '#ffffff',
             dotsType: 'square',
@@ -46,28 +44,26 @@ class QRForgeVichingo {
         });
     }
     
-    async loadLogoImage(file) {
-        try {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                this.config.logoImage = e.target.result;
-                this.updateLogoPreview(e.target.result);
-                this.generateQR();
-                this.showStatus('success', '🖼️ Logo caricato con successo!');
-            };
-            reader.readAsDataURL(file);
-        } catch (error) {
-            console.error('Errore caricamento logo:', error);
+    loadLogoImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.config.logoImage = e.target.result;
+            this.updateLogoPreview(e.target.result);
+            this.generateQR();
+            this.showStatus('success', '🖼️ Logo caricato con successo!');
+        };
+        reader.onerror = () => {
             this.showStatus('error', '❌ Errore nel caricamento del logo');
-        }
+        };
+        reader.readAsDataURL(file);
     }
     
     updateLogoPreview(imageSrc) {
         const previewContainer = document.getElementById('logo-preview');
         if (previewContainer) {
             previewContainer.innerHTML = `
-                <img src="${imageSrc}" alt="Logo Preview" style="max-width: 100%; max-height: 80px; object-fit: contain;">
-                <button class="btn-secondary remove-logo-btn" onclick="qrApp.removeLogo()" style="margin-left: 10px; padding: 5px 10px; font-size: 0.8rem;">🗑️</button>
+                <img src="${imageSrc}" alt="Logo Preview">
+                <button class="btn-secondary remove-logo-btn" onclick="qrApp.removeLogo()">🗑️</button>
             `;
         }
     }
@@ -128,10 +124,7 @@ class QRForgeVichingo {
         // Template buttons
         document.querySelectorAll('.template-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const template = e.currentTarget.dataset.template;
-                if (template) {
-                    this.applyTemplate(template);
-                }
+                this.applyTemplate(e.currentTarget.dataset.template);
             });
         });
         
@@ -140,8 +133,8 @@ class QRForgeVichingo {
             document.getElementById('logo-upload').click();
         });
         
-        document.getElementById('download-png').addEventListener('click', () => this.downloadPNG());
-        document.getElementById('download-svg').addEventListener('click', () => this.downloadSVG());
+        document.getElementById('download-png').addEventListener('click', () => this.downloadFile('png'));
+        document.getElementById('download-svg').addEventListener('click', () => this.downloadFile('svg'));
         document.getElementById('test-scan').addEventListener('click', () => this.testScan());
         document.getElementById('reset-btn').addEventListener('click', () => this.reset());
     }
@@ -151,47 +144,39 @@ class QRForgeVichingo {
         document.querySelectorAll('.template-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        const targetBtn = document.querySelector(`[data-template="${templateName}"]`);
-        if (targetBtn) targetBtn.classList.add('active');
+        document.querySelector(`[data-template="${templateName}"]`)?.classList.add('active');
         
         const templates = {
             classic: { 
                 dotsColor: '#000000', 
                 backgroundColor: '#ffffff',
                 dotsType: 'square',
-                cornersSquareType: 'square',
-                cornersDotType: 'square'
+                cornersSquareType: 'square'
             },
             rounded: { 
                 dotsColor: '#3b82f6', 
                 backgroundColor: '#f1f5f9',
                 dotsType: 'rounded',
-                cornersSquareType: 'extra-rounded',
-                cornersDotType: 'dot'
+                cornersSquareType: 'extra-rounded'
             },
             dots: { 
                 dotsColor: '#8b5cf6', 
                 backgroundColor: '#faf5ff',
                 dotsType: 'dots',
-                cornersSquareType: 'dot',
-                cornersDotType: 'dot'
+                cornersSquareType: 'dot'
             },
             professional: { 
                 dotsColor: '#f59e0b', 
                 backgroundColor: '#1f2937',
                 dotsType: 'extra-rounded',
-                cornersSquareType: 'extra-rounded',
-                cornersDotType: 'square'
+                cornersSquareType: 'extra-rounded'
             }
         };
         
         const template = templates[templateName];
         if (template) {
-            this.config.dotsColor = template.dotsColor;
-            this.config.backgroundColor = template.backgroundColor;
-            this.config.dotsType = template.dotsType;
-            this.config.cornersSquareType = template.cornersSquareType;
-            this.config.cornersDotType = template.cornersDotType;
+            Object.assign(this.config, template);
+            this.config.cornersDotType = template.cornersSquareType;
             
             // Update UI
             document.getElementById('foreground-color').value = template.dotsColor;
@@ -208,7 +193,7 @@ class QRForgeVichingo {
             const qrOptions = {
                 width: this.config.width,
                 height: this.config.height,
-                type: this.config.type,
+                type: 'svg',
                 data: this.config.text,
                 dotsOptions: {
                     color: this.config.dotsColor,
@@ -226,7 +211,7 @@ class QRForgeVichingo {
                     type: this.config.cornersDotType
                 },
                 qrOptions: {
-                    errorCorrectionLevel: this.config.errorCorrectionLevel
+                    errorCorrectionLevel: 'M'
                 }
             };
             
@@ -245,7 +230,6 @@ class QRForgeVichingo {
             
             const container = document.getElementById('qr-container');
             container.innerHTML = '';
-            
             this.qrCode.append(container);
             
             this.showStatus('success', '✅ QR Code generato correttamente');
@@ -255,7 +239,7 @@ class QRForgeVichingo {
         }
     }
     
-    downloadPNG() {
+    downloadFile(extension) {
         if (!this.qrCode) {
             this.showStatus('error', '❌ Nessun QR Code da scaricare');
             return;
@@ -264,36 +248,18 @@ class QRForgeVichingo {
         try {
             this.qrCode.download({
                 name: `qr-vichingo-${Date.now()}`,
-                extension: 'png'
+                extension: extension
             });
             
-            this.showStatus('success', '📱 PNG scaricato!');
+            const icon = extension === 'png' ? '📱' : '🎨';
+            this.showStatus('success', `${icon} ${extension.toUpperCase()} scaricato!`);
         } catch (error) {
-            console.error('Errore download PNG:', error);
-            this.showStatus('error', '❌ Errore nel download PNG');
+            console.error(`Errore download ${extension}:`, error);
+            this.showStatus('error', `❌ Errore nel download ${extension.toUpperCase()}`);
         }
     }
     
-    downloadSVG() {
-        if (!this.qrCode) {
-            this.showStatus('error', '❌ Nessun QR Code da scaricare');
-            return;
-        }
-        
-        try {
-            this.qrCode.download({
-                name: `qr-vichingo-${Date.now()}`,
-                extension: 'svg'
-            });
-            
-            this.showStatus('success', '🎨 SVG scaricato!');
-        } catch (error) {
-            console.error('Errore download SVG:', error);
-            this.showStatus('error', '❌ Errore nel download SVG');
-        }
-    }
-    
-    async testScan() {
+    testScan() {
         this.showStatus('warning', '🔍 Test di scansionabilità in corso...');
         
         setTimeout(() => {
@@ -301,7 +267,6 @@ class QRForgeVichingo {
             const logoSize = this.config.logoScale;
             
             let successProbability = 0.95;
-            
             if (hasLogo) {
                 successProbability -= (logoSize * 0.3);
             }
@@ -321,8 +286,6 @@ class QRForgeVichingo {
             text: 'bridge.html',
             width: 400,
             height: 400,
-            type: 'svg',
-            errorCorrectionLevel: 'M',
             dotsColor: '#2c3e50',
             backgroundColor: '#ffffff',
             dotsType: 'square',
@@ -352,13 +315,13 @@ class QRForgeVichingo {
     showStatus(type, message) {
         const statusElement = document.getElementById('scan-status');
         
-        let icon;
-        switch(type) {
-            case 'success': icon = '✅'; break;
-            case 'error': icon = '❌'; break;
-            case 'warning': icon = '⚠️'; break;
-            default: icon = 'ℹ️';
-        }
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️'
+        };
+        
+        const icon = icons[type] || 'ℹ️';
         
         statusElement.className = `scan-status ${type}`;
         statusElement.innerHTML = `
