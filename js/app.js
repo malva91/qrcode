@@ -1,6 +1,7 @@
 import QRCodeStyling from 'qr-code-styling';
+import { QRBTF } from 'qrbtf';
 
-// ===== VIKING QR APP CON TAB CLASSICO + SPERIMENTALE =====
+// ===== VIKING QR APP CON TAB CLASSICO + SPERIMENTALE QRBTF =====
 class VikingQRApp {
     constructor() {
         // Configurazione classica
@@ -17,7 +18,7 @@ class VikingQRApp {
             cornersDotType: 'square'
         };
         
-        // Configurazione sperimentale
+        // Configurazione sperimentale QRBTF
         this.expConfig = {
             text: 'https://esempio.com',
             width: 300,
@@ -25,8 +26,11 @@ class VikingQRApp {
             errorCorrectionLevel: 'H',
             foregroundColor: '#8B4513',
             backgroundColor: '#F5F5DC',
-            style: 'a1',
-            intensity: 50
+            style: 'A1',
+            logoImage: null,
+            logoScale: 0.3,
+            logoMargin: 10,
+            logoCornerRadius: 8
         };
         
         this.qrCode = null;
@@ -36,11 +40,73 @@ class VikingQRApp {
     }
     
     init() {
+        this.hideLoadingScreen(); // Nascondi subito la schermata di caricamento
         this.setupEventListeners();
         this.setupTabNavigation();
+        this.setupImageUpload();
         this.generateQR();
         this.generateExperimentalQR();
         console.log('🔧 Viking QR Generator inizializzato con qr-code-styling + QRBTF');
+    }
+    
+    hideLoadingScreen() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('hidden');
+        }
+    }
+    
+    setupImageUpload() {
+        // Crea input file nascosto per il caricamento immagini
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        fileInput.id = 'logo-upload';
+        document.body.appendChild(fileInput);
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.loadLogoImage(file);
+            }
+        });
+    }
+    
+    async loadLogoImage(file) {
+        try {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.expConfig.logoImage = e.target.result;
+                this.updateLogoPreview(e.target.result);
+                this.generateExperimentalQR();
+                this.showExperimentalStatus('success', '🖼️ Logo caricato con successo!');
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error('Errore caricamento logo:', error);
+            this.showExperimentalStatus('error', '❌ Errore nel caricamento del logo');
+        }
+    }
+    
+    updateLogoPreview(imageSrc) {
+        const previewContainer = document.getElementById('logo-preview');
+        if (previewContainer) {
+            previewContainer.innerHTML = `
+                <img src="${imageSrc}" alt="Logo Preview" style="max-width: 60px; max-height: 60px; border-radius: 4px; object-fit: contain;">
+                <button class="btn-secondary" onclick="qrApp.removeLogo()" style="margin-left: 8px; padding: 4px 8px; font-size: 0.8rem;">🗑️</button>
+            `;
+        }
+    }
+    
+    removeLogo() {
+        this.expConfig.logoImage = null;
+        const previewContainer = document.getElementById('logo-preview');
+        if (previewContainer) {
+            previewContainer.innerHTML = '<span style="color: #888; font-size: 0.9rem;">Nessun logo caricato</span>';
+        }
+        this.generateExperimentalQR();
+        this.showExperimentalStatus('success', '🗑️ Logo rimosso');
     }
     
     setupTabNavigation() {
@@ -145,9 +211,21 @@ class VikingQRApp {
             this.generateExperimentalQR();
         });
         
-        document.getElementById('exp-intensity').addEventListener('input', (e) => {
-            this.expConfig.intensity = parseInt(e.target.value);
-            document.getElementById('exp-intensity-value').textContent = e.target.value;
+        document.getElementById('logo-scale').addEventListener('input', (e) => {
+            this.expConfig.logoScale = parseFloat(e.target.value);
+            document.getElementById('logo-scale-value').textContent = Math.round(e.target.value * 100);
+            this.generateExperimentalQR();
+        });
+        
+        document.getElementById('logo-margin').addEventListener('input', (e) => {
+            this.expConfig.logoMargin = parseInt(e.target.value);
+            document.getElementById('logo-margin-value').textContent = e.target.value;
+            this.generateExperimentalQR();
+        });
+        
+        document.getElementById('logo-corner-radius').addEventListener('input', (e) => {
+            this.expConfig.logoCornerRadius = parseInt(e.target.value);
+            document.getElementById('logo-corner-radius-value').textContent = e.target.value;
             this.generateExperimentalQR();
         });
         
@@ -158,6 +236,10 @@ class VikingQRApp {
                     this.applyExperimentalPreset(preset);
                 }
             });
+        });
+        
+        document.getElementById('upload-logo-btn').addEventListener('click', () => {
+            document.getElementById('logo-upload').click();
         });
         
         document.getElementById('exp-download-png').addEventListener('click', () => this.downloadExperimentalPNG());
@@ -262,42 +344,84 @@ class VikingQRApp {
     
     async generateExperimentalQR() {
         try {
-            // Simula generazione QRBTF (la libreria potrebbe non essere disponibile)
             const container = document.getElementById('exp-qr-container');
             container.innerHTML = '';
             
-            // Crea un QR sperimentale usando QRCodeStyling con stili personalizzati
-            const experimentalStyles = this.getExperimentalStyle(this.expConfig.style);
+            // Usa QRBTF per generazione avanzata
+            const qrbtfOptions = {
+                text: this.expConfig.text,
+                size: this.expConfig.width,
+                correctLevel: this.getQRBTFErrorLevel(this.expConfig.errorCorrectionLevel),
+                foreground: this.expConfig.foregroundColor,
+                background: this.expConfig.backgroundColor,
+                style: this.expConfig.style
+            };
             
-            this.expQrCode = new QRCodeStyling({
-                width: this.expConfig.width,
-                height: this.expConfig.height,
-                type: 'svg',
-                data: this.expConfig.text,
-                dotsOptions: {
-                    color: this.expConfig.foregroundColor,
-                    type: experimentalStyles.dotsType,
-                    gradient: experimentalStyles.gradient
-                },
-                backgroundOptions: {
-                    color: this.expConfig.backgroundColor
-                },
-                cornersSquareOptions: {
-                    color: this.expConfig.foregroundColor,
-                    type: experimentalStyles.cornersType
-                },
-                cornersDotOptions: {
-                    color: this.expConfig.foregroundColor,
-                    type: experimentalStyles.cornersDotType
-                },
-                qrOptions: {
-                    errorCorrectionLevel: this.expConfig.errorCorrectionLevel
+            // Se c'è un logo, aggiungilo alle opzioni
+            if (this.expConfig.logoImage) {
+                qrbtfOptions.logo = {
+                    image: this.expConfig.logoImage,
+                    scale: this.expConfig.logoScale,
+                    margin: this.expConfig.logoMargin,
+                    cornerRadius: this.expConfig.logoCornerRadius
+                };
+            }
+            
+            // Genera QR con QRBTF
+            try {
+                const qrbtf = new QRBTF(qrbtfOptions);
+                const svgString = await qrbtf.svg();
+                container.innerHTML = svgString;
+                
+                this.showExperimentalStatus('success', '🎨 QR Artistico QRBTF generato');
+            } catch (qrbtfError) {
+                console.warn('QRBTF non disponibile, fallback a QRCodeStyling:', qrbtfError);
+                
+                // Fallback con QRCodeStyling + logo
+                const experimentalStyles = this.getExperimentalStyle(this.expConfig.style);
+                
+                const qrOptions = {
+                    width: this.expConfig.width,
+                    height: this.expConfig.height,
+                    type: 'svg',
+                    data: this.expConfig.text,
+                    dotsOptions: {
+                        color: this.expConfig.foregroundColor,
+                        type: experimentalStyles.dotsType,
+                        gradient: experimentalStyles.gradient
+                    },
+                    backgroundOptions: {
+                        color: this.expConfig.backgroundColor
+                    },
+                    cornersSquareOptions: {
+                        color: this.expConfig.foregroundColor,
+                        type: experimentalStyles.cornersType
+                    },
+                    cornersDotOptions: {
+                        color: this.expConfig.foregroundColor,
+                        type: experimentalStyles.cornersDotType
+                    },
+                    qrOptions: {
+                        errorCorrectionLevel: this.expConfig.errorCorrectionLevel
+                    }
+                };
+                
+                // Aggiungi logo se presente
+                if (this.expConfig.logoImage) {
+                    qrOptions.imageOptions = {
+                        hideBackgroundDots: true,
+                        imageSize: this.expConfig.logoScale,
+                        margin: this.expConfig.logoMargin,
+                        crossOrigin: "anonymous"
+                    };
+                    qrOptions.image = this.expConfig.logoImage;
                 }
-            });
-            
-            this.expQrCode.append(container);
-            
-            this.showExperimentalStatus('success', '🎨 QR Artistico generato');
+                
+                this.expQrCode = new QRCodeStyling(qrOptions);
+                this.expQrCode.append(container);
+                
+                this.showExperimentalStatus('success', '🎨 QR Artistico generato (fallback)');
+            }
             
         } catch (error) {
             console.error('Errore generazione QR sperimentale:', error);
@@ -305,9 +429,19 @@ class VikingQRApp {
         }
     }
     
+    getQRBTFErrorLevel(level) {
+        const mapping = {
+            'L': 0,
+            'M': 1,
+            'Q': 2,
+            'H': 3
+        };
+        return mapping[level] || 1;
+    }
+    
     getExperimentalStyle(styleName) {
         const styles = {
-            a1: { // Diamanti
+            A1: { // Diamanti
                 dotsType: 'extra-rounded',
                 cornersType: 'extra-rounded',
                 cornersDotType: 'dot',
@@ -320,24 +454,24 @@ class VikingQRApp {
                     ]
                 }
             },
-            a2: { // Cerchi
+            A2: { // Cerchi
                 dotsType: 'dots',
                 cornersType: 'dot',
                 cornersDotType: 'dot'
             },
-            b1: { // Linee H
+            B1: { // Linee H
                 dotsType: 'classy',
                 cornersType: 'square',
                 cornersDotType: 'square'
             },
-            b2: { // Linee V
+            B2: { // Linee V
                 dotsType: 'classy-rounded',
                 cornersType: 'extra-rounded',
                 cornersDotType: 'square'
             }
         };
         
-        return styles[styleName] || styles.a1;
+        return styles[styleName] || styles.A1;
     }
     
     adjustColor(color, amount) {
@@ -391,6 +525,16 @@ class VikingQRApp {
     
     downloadExperimentalPNG() {
         if (!this.expQrCode) {
+            // Se non c'è expQrCode, prova a scaricare dal container SVG
+            const container = document.getElementById('exp-qr-container');
+            const svgElement = container.querySelector('svg');
+            
+            if (svgElement) {
+                this.downloadSVGAsPNG(svgElement, `viking-experimental-qr-${Date.now()}.png`);
+                this.showExperimentalStatus('success', '📱 PNG Artistico scaricato!');
+                return;
+            }
+            
             this.showExperimentalStatus('error', '❌ Nessun QR Code da scaricare');
             return;
         }
@@ -409,6 +553,26 @@ class VikingQRApp {
     }
     
     downloadExperimentalSVG() {
+        const container = document.getElementById('exp-qr-container');
+        const svgElement = container.querySelector('svg');
+        
+        if (svgElement) {
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const svgUrl = URL.createObjectURL(svgBlob);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = svgUrl;
+            downloadLink.download = `viking-experimental-qr-${Date.now()}.svg`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(svgUrl);
+            
+            this.showExperimentalStatus('success', '🎨 SVG Artistico scaricato!');
+            return;
+        }
+        
         if (!this.expQrCode) {
             this.showExperimentalStatus('error', '❌ Nessun QR Code da scaricare');
             return;
@@ -427,17 +591,54 @@ class VikingQRApp {
         }
     }
     
+    downloadSVGAsPNG(svgElement, filename) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = filename;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        };
+        
+        img.src = url;
+    }
+    
     async testExperimentalScan() {
         this.showExperimentalStatus('warning', '🔍 Test di scansionabilità in corso...');
         
-        // Simula test di scansione
+        // Simula test di scansione più realistico
         setTimeout(() => {
-            const isScannableSimulation = Math.random() > 0.3; // 70% di successo
+            const hasLogo = this.expConfig.logoImage !== null;
+            const errorLevel = this.expConfig.errorCorrectionLevel;
+            
+            // Calcola probabilità di successo basata su parametri reali
+            let successProbability = 0.8;
+            if (hasLogo) successProbability -= 0.2;
+            if (errorLevel === 'L') successProbability -= 0.3;
+            if (errorLevel === 'M') successProbability -= 0.1;
+            
+            const isScannableSimulation = Math.random() < successProbability;
             
             if (isScannableSimulation) {
                 this.showExperimentalStatus('success', '✅ QR Code scansionabile!');
             } else {
-                this.showExperimentalStatus('error', '❌ QR Code potrebbe non essere scansionabile - prova ad aumentare la correzione errore');
+                this.showExperimentalStatus('error', '❌ QR Code potrebbe non essere scansionabile - prova ad aumentare la correzione errore o ridurre il logo');
             }
         }, 2000);
     }
@@ -476,8 +677,11 @@ class VikingQRApp {
             errorCorrectionLevel: 'H',
             foregroundColor: '#8B4513',
             backgroundColor: '#F5F5DC',
-            style: 'a1',
-            intensity: 50
+            style: 'A1',
+            logoImage: null,
+            logoScale: 0.3,
+            logoMargin: 10,
+            logoCornerRadius: 8
         };
         
         document.getElementById('exp-qr-text').value = this.expConfig.text;
@@ -486,10 +690,15 @@ class VikingQRApp {
         document.getElementById('exp-error-correction').value = this.expConfig.errorCorrectionLevel;
         document.getElementById('exp-foreground-color').value = this.expConfig.foregroundColor;
         document.getElementById('exp-background-color').value = this.expConfig.backgroundColor;
-        document.getElementById('exp-intensity').value = this.expConfig.intensity;
-        document.getElementById('exp-intensity-value').textContent = this.expConfig.intensity;
+        document.getElementById('logo-scale').value = this.expConfig.logoScale;
+        document.getElementById('logo-scale-value').textContent = Math.round(this.expConfig.logoScale * 100);
+        document.getElementById('logo-margin').value = this.expConfig.logoMargin;
+        document.getElementById('logo-margin-value').textContent = this.expConfig.logoMargin;
+        document.getElementById('logo-corner-radius').value = this.expConfig.logoCornerRadius;
+        document.getElementById('logo-corner-radius-value').textContent = this.expConfig.logoCornerRadius;
         
-        this.applyExperimentalPreset('a1');
+        this.removeLogo();
+        this.applyExperimentalPreset('A1');
         this.showExperimentalStatus('success', '🔄 Impostazioni sperimentali ripristinate');
     }
     
@@ -528,27 +737,62 @@ class VikingQRApp {
             <div class="status-text">${message}</div>
         `;
     }
-    
-    // Simula schermata di caricamento quando si scansiona un QR
-    simulateLoadingScreen() {
-        const loadingScreen = document.getElementById('loading-screen');
-        loadingScreen.classList.remove('hidden');
+}
+
+// ===== SISTEMA DI BRIDGE PER QR SCANSIONATI =====
+class QRBridgeSystem {
+    static init() {
+        // Controlla se siamo in una pagina di bridge (parametro URL)
+        const urlParams = new URLSearchParams(window.location.search);
+        const bridgeMode = urlParams.get('qr_bridge');
+        const targetUrl = urlParams.get('target');
         
-        setTimeout(() => {
-            loadingScreen.classList.add('hidden');
-        }, 3000);
+        if (bridgeMode === 'true' && targetUrl) {
+            this.showBridgeScreen(decodeURIComponent(targetUrl));
+        }
+    }
+    
+    static showBridgeScreen(targetUrl) {
+        // Mostra la schermata di caricamento
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.remove('hidden');
+            
+            // Aggiorna il testo per il bridge
+            const loadingText = loadingScreen.querySelector('.loading-text');
+            if (loadingText) {
+                loadingText.textContent = 'ti stanno portando alla destinazione...';
+            }
+            
+            // Dopo 3 secondi, reindirizza alla pagina target
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 3000);
+        } else {
+            // Se non c'è schermata di caricamento, reindirizza subito
+            window.location.href = targetUrl;
+        }
+    }
+    
+    // Metodo per creare URL con bridge
+    static createBridgeUrl(targetUrl) {
+        const currentOrigin = window.location.origin;
+        const currentPath = window.location.pathname;
+        return `${currentOrigin}${currentPath}?qr_bridge=true&target=${encodeURIComponent(targetUrl)}`;
     }
 }
 
 // ===== INIZIALIZZAZIONE =====
 document.addEventListener('DOMContentLoaded', () => {
-    window.qrApp = new VikingQRApp();
+    // Inizializza il sistema di bridge per QR scansionati
+    QRBridgeSystem.init();
     
-    // Nascondi schermata di caricamento dopo l'inizializzazione
-    setTimeout(() => {
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-            loadingScreen.classList.add('hidden');
-        }
-    }, 2500);
+    // Inizializza l'app principale solo se non siamo in modalità bridge
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.get('qr_bridge')) {
+        window.qrApp = new VikingQRApp();
+        
+        // Esponi il sistema di bridge globalmente per uso futuro
+        window.QRBridgeSystem = QRBridgeSystem;
+    }
 });

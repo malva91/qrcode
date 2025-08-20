@@ -162,19 +162,19 @@
                     <div class="section">
                         <h3 class="section-title">Stili Artistici QRBTF</h3>
                         <div class="presets-grid">
-                            <button class="preset-btn active" data-exp-preset="a1">
+                            <button class="preset-btn active" data-exp-preset="A1">
                                 <div class="preset-preview" style="background: linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(-45deg, #000 25%, transparent 25%); background-size: 8px 8px;"></div>
                                 <span>Diamanti</span>
                             </button>
-                            <button class="preset-btn" data-exp-preset="a2">
+                            <button class="preset-btn" data-exp-preset="A2">
                                 <div class="preset-preview" style="background: radial-gradient(circle, #000 30%, transparent 30%); background-size: 6px 6px;"></div>
                                 <span>Cerchi</span>
                             </button>
-                            <button class="preset-btn" data-exp-preset="b1">
+                            <button class="preset-btn" data-exp-preset="B1">
                                 <div class="preset-preview" style="background: repeating-linear-gradient(0deg, #000 0px, #000 2px, transparent 2px, transparent 6px);"></div>
                                 <span>Linee H</span>
                             </button>
-                            <button class="preset-btn" data-exp-preset="b2">
+                            <button class="preset-btn" data-exp-preset="B2">
                                 <div class="preset-preview" style="background: repeating-linear-gradient(90deg, #000 0px, #000 2px, transparent 2px, transparent 6px);"></div>
                                 <span>Linee V</span>
                             </button>
@@ -217,11 +217,52 @@
                     </div>
 
                     <div class="section">
+                        <h3 class="section-title">🖼️ Logo Centrale</h3>
+                        <div class="control-group">
+                            <button id="upload-logo-btn" class="btn-secondary">📁 Carica Logo</button>
+                            <div id="logo-preview" style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; min-height: 40px; display: flex; align-items: center;">
+                                <span style="color: #888; font-size: 0.9rem;">Nessun logo caricato</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">⚙️ Impostazioni Logo</h3>
+                        <div class="controls-grid">
+                            <div class="control-group">
+                                <label class="label">
+                                    Dimensione Logo: <span id="logo-scale-value">30</span>%
+                                </label>
+                                <input type="range" id="logo-scale" min="0.1" max="0.5" value="0.3" step="0.05">
+                            </div>
+                            
+                            <div class="control-group">
+                                <label class="label">
+                                    Margine: <span id="logo-margin-value">10</span>px
+                                </label>
+                                <input type="range" id="logo-margin" min="0" max="20" value="10" step="2">
+                            </div>
+                        </div>
+                        
                         <div class="control-group">
                             <label class="label">
-                                Intensità Artistica: <span id="exp-intensity-value">50</span>%
+                                Angoli Arrotondati: <span id="logo-corner-radius-value">8</span>px
                             </label>
-                            <input type="range" id="exp-intensity" min="10" max="90" value="50" step="10">
+                            <input type="range" id="logo-corner-radius" min="0" max="20" value="8" step="2">
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="control-group">
+                            <label class="label">Stile QRBTF</label>
+                            <select id="qrbtf-style">
+                                <option value="A1">A1 - Diamanti</option>
+                                <option value="A2">A2 - Cerchi</option>
+                                <option value="B1">B1 - Linee Orizzontali</option>
+                                <option value="B2">B2 - Linee Verticali</option>
+                                <option value="C1">C1 - Quadrati Ruotati</option>
+                                <option value="C2">C2 - Stelle</option>
+                            </select>
                         </div>
                     </div>
 
