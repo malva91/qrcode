@@ -35,11 +35,6 @@ class QRForgeVichingo {
         };
         
         this.qrCode = null;
-        this.densitySettings = {
-            1: { margin: 4, typeNumber: 0 },    // Bassa densità
-            2: { margin: 2, typeNumber: 0 },    // Normale
-            3: { margin: 1, typeNumber: 0 }     // Alta densità
-        };
         this.init();
     }
     
@@ -133,7 +128,7 @@ class QRForgeVichingo {
         // Densità QR
         document.getElementById('qr-density').addEventListener('input', (e) => {
             const density = parseInt(e.target.value);
-            this.applyDensitySettings(density);
+            this.config.qrOptions.typeNumber = this.getDensityTypeNumber(density);
             this.updateDensityLabel(density);
             this.generateQR();
         });
@@ -189,11 +184,13 @@ class QRForgeVichingo {
         this.config.cornersDotOptions.type = dotsType === 'dots' ? 'dot' : 'square';
     }
     
-    applyDensitySettings(density) {
-        const settings = this.densitySettings[density];
-        if (settings) {
-            this.config.imageOptions.margin = settings.margin;
-            this.config.qrOptions.typeNumber = settings.typeNumber;
+    getDensityTypeNumber(density) {
+        // Forza un typeNumber specifico per controllare la densità
+        switch(density) {
+            case 1: return 4;  // Bassa densità - meno moduli
+            case 2: return 0;  // Normale - auto-detect
+            case 3: return 10; // Alta densità - più moduli
+            default: return 0;
         }
     }
     
@@ -357,7 +354,8 @@ class QRForgeVichingo {
             },
             qrOptions: {
                 errorCorrectionLevel: 'M',
-                typeNumber: 0
+                typeNumber: 0,
+                mode: 'Byte'
             },
             image: null
         };
@@ -368,6 +366,7 @@ class QRForgeVichingo {
         document.getElementById('dots-style').value = this.config.dotsOptions.type;
         document.getElementById('qr-density').value = 2;
         document.getElementById('qr-density-value').textContent = 'Normale';
+        this.config.qrOptions.typeNumber = 0;
         document.getElementById('logo-scale').value = this.config.imageOptions.imageSize;
         document.getElementById('logo-scale-value').textContent = Math.round(this.config.imageOptions.imageSize * 100);
         document.getElementById('error-correction').value = this.config.qrOptions.errorCorrectionLevel;
