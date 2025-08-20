@@ -112,9 +112,10 @@
     <div class="countdown">Reindirizzamento in <span id="countdown">3</span> secondi...</div>
     
     <script>
-        // Legge l'URL di destinazione dai parametri URL o usa un default
         const urlParams = new URLSearchParams(window.location.search);
         const targetUrl = urlParams.get('url') || 'https://www.instagram.com/';
+        
+        console.log('Bridge caricato, URL di destinazione:', targetUrl);
         
         let countdown = 3;
         const countdownElement = document.getElementById('countdown');

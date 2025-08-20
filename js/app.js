@@ -340,11 +340,14 @@ class QRForgeVichingo {
     
     generateQR() {
         try {
+            // Il QR code deve sempre puntare al bridge con l'URL come parametro
+            const bridgeUrl = `bridge.html?url=${encodeURIComponent(this.config.targetUrl)}`;
+            
             const qrOptions = {
                 width: this.config.width,
                 height: this.config.height,
                 type: 'svg',
-                data: 'bridge.html', // Il QR punta sempre al bridge
+                data: bridgeUrl, // Il QR punta al bridge con parametri
                 dotsOptions: {
                     color: this.config.dotsColor,
                     type: this.config.dotsType
