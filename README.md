@@ -1,63 +1,59 @@
-# 🗡️ Viking QR Forge
+# 🎨 QR Designer Pro
 
-Generatore di QR Code con estetica vichinga e runica, mantenendo la piena compatibilità con scanner comuni.
+Generatore professionale di QR Code con design personalizzati e supporto logo.
 
 ## ✨ Caratteristiche
 
-### 🎨 Stili Disponibili
+### 🎨 Template di Design
 - **Classico**: QR code standard nero su bianco
-- **Puro**: QR code senza decorazioni o cornici
-- **Rombi Runici**: Moduli renderizzati come rombi
-- **Tratti Runici**: Moduli come glifi runici stilizzati
+- **Arrotondato**: Moduli arrotondati con colori moderni
+- **Punti**: Stile a punti con design elegante
+- **Professionale**: Design avanzato con pattern personalizzati
 
-### 🏰 Stili Finder Pattern
-- **Classico**: Pattern standard
-- **Pietra Spaccata**: Effetto pietra con bordi irregolari
-- **Nessuno**: Rimuove completamente i finder pattern
-
-### 🛡️ Cornici Decorative
-- **Nessuna**: QR code pulito
-- **Vichinga**: Bordo decorativo con angoli ornamentali
-- **Runica**: Cerchio runico con simboli sui punti cardinali
+### 🖼️ Logo Centrale
+- Caricamento logo personalizzato
+- Controllo dimensione e margini
+- Angoli arrotondati configurabili
+- Anteprima in tempo reale
 
 ### ⚙️ Opzioni Avanzate
 - **Correzione Errore**: L (7%), M (15%), Q (25%), H (30%)
-- **Ottimizzazione Maschera**: Algoritmo che favorisce pattern diagonali
-- **Densità Rune**: Controllo percentuale di moduli runici vs classici
-- **Colori Personalizzabili**: Foreground e background
+- **Stili Personalizzabili**: Moduli e angoli configurabili
+- **Colori**: Foreground e background completamente personalizzabili
+- **Dimensioni**: Da 300px a 600px
 
 ## 🔧 Utilizzo
 
 ### Interfaccia Web
 1. Inserisci il testo/URL da codificare
-2. Seleziona uno stile preset o personalizza le opzioni
-3. Scarica in formato PNG o SVG
-4. Usa il pulsante "Valida QR" per verificare la scansionabilità
+2. Seleziona un template di design o personalizza le opzioni
+3. Carica un logo opzionale
+4. Scarica in formato PNG o SVG
+5. Usa il pulsante "Testa Scansione" per verificare la scansionabilità
 
 ### API JavaScript
 
 ```javascript
-import { VikingQR } from './js/qr-engine/viking-qr.js';
+import QRCodeStyling from 'qr-code-styling';
 
-// Genera SVG
-const svgString = VikingQR.generateSVG('https://esempio.com', {
-  ecLevel: 'H',
-  moduleSize: 8,
-  margin: 4,
-  style: 'runes-romb',
-  finderStyle: 'stone',
-  borderStyle: 'viking',
-  foregroundColor: '#8B4513',
-  backgroundColor: '#F5F5DC',
-  runeDensity: 0.8,
-  maskStrategy: 'optimize'
+const qr = new QRCodeStyling({
+  width: 400,
+  height: 400,
+  data: 'https://esempio.com',
+  dotsOptions: {
+    color: '#2c3e50',
+    type: 'rounded'
+  },
+  backgroundOptions: {
+    color: '#ffffff'
+  },
+  imageOptions: {
+    hideBackgroundDots: true,
+    imageSize: 0.25,
+    margin: 8
+  },
+  image: logoDataUrl
 });
-
-// Genera PNG
-const pngBlob = await VikingQR.generatePNG('https://esempio.com', options);
-
-// Valida scansionabilità
-const isValid = await VikingQR.validateQR(svgString);
 ```
 
 ## 📱 Compatibilità Scanner
@@ -71,46 +67,53 @@ Il sistema è ottimizzato per mantenere la compatibilità con:
 ### 🎯 Raccomandazioni per la Stampa
 - **Dimensione minima**: 30mm per lato per URL corti
 - **Contrasto**: Mantenere colori scuri su sfondo chiaro
-- **Quiet Zone**: Sempre rispettata (4 moduli di margine)
+- **Logo**: Non superare il 25% della dimensione totale
 - **Risoluzione**: Minimo 300 DPI per stampa
 
 ## 🏗️ Architettura
 
-### Moduli Principali
-- `qr-generator.ts`: Generazione matrice QR con ottimizzazione maschere
-- `rune-renderer.ts`: Rendering SVG con stili runici
-- `viking-qr.ts`: API principale e validazione
-- `types.ts`: Definizioni TypeScript
+### Tecnologie Utilizzate
+- **qr-code-styling**: Libreria principale per generazione QR
+- **Vite**: Build tool e dev server
+- **CSS Custom Properties**: Sistema di design modulare
+- **ES6 Modules**: Architettura JavaScript moderna
 
-### Algoritmo di Ottimizzazione
-Il sistema implementa un algoritmo di scoring personalizzato che:
-1. Favorisce pattern diagonali e cluster a rombo
-2. Penalizza run-length eccessivi
-3. Mantiene la compatibilità con standard QR
-4. Testa tutte le 8 maschere disponibili
+### Funzionalità Principali
+- Generazione QR in tempo reale
+- Anteprima live
+- Sistema di template
+- Gestione logo con anteprima
+- Test di scansionabilità simulato
+- Download PNG/SVG
 
-## 🧪 Testing
+## 🎨 Template Disponibili
 
-Il sistema include validazione automatica tramite:
-- Decoder jsQR integrato
-- Test di rendering Canvas
-- Verifica pattern critici (finder, timing, alignment)
+### Classico
+- Moduli quadrati neri
+- Sfondo bianco
+- Massima compatibilità
 
-## 🎨 Glifi Runici Implementati
+### Arrotondato
+- Moduli arrotondati blu
+- Sfondo chiaro
+- Design moderno
 
-- **Fehu** (ᚠ): Ricchezza, bestiame
-- **Uruz** (ᚢ): Forza, coraggio  
-- **Thurisaz** (ᚦ): Protezione, martello di Thor
-- **Ansuz** (ᚨ): Saggezza, comunicazione
-- **Raidho** (ᚱ): Viaggio, movimento
-- **Kenaz** (ᚲ): Conoscenza, fuoco
+### Punti
+- Moduli circolari viola
+- Sfondo tenue
+- Stile elegante
+
+### Professionale
+- Pattern avanzati dorati
+- Sfondo scuro
+- Effetto premium
 
 ## 🔒 Sicurezza e Affidabilità
 
-- Quiet zone sempre rispettata
-- Pattern critici mai modificati
-- Validazione automatica pre-download
-- Fallback a rendering classico in caso di errori
+- Correzione errore configurabile
+- Test di scansionabilità integrato
+- Validazione parametri logo
+- Fallback per compatibilità
 
 ## 📄 Licenza
 
@@ -131,8 +134,8 @@ npm run build
 
 ## 🎯 Roadmap
 
-- [ ] CLI standalone per Node.js
-- [ ] Supporto logo centrale
-- [ ] Più stili runici
-- [ ] Export in formati vettoriali aggiuntivi
-- [ ] Batch processing per più QR
+- [ ] Più template di design
+- [ ] Supporto batch processing
+- [ ] API REST
+- [ ] Integrazione con servizi cloud
+- [ ] Editor avanzato colori
