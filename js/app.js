@@ -544,11 +544,11 @@ class VikingQRApp {
 document.addEventListener('DOMContentLoaded', () => {
     window.qrApp = new VikingQRApp();
     
-    // Simula caricamento iniziale
+    // Nascondi schermata di caricamento dopo l'inizializzazione
     setTimeout(() => {
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
             loadingScreen.classList.add('hidden');
         }
-    }, 1500);
+    }, 2500);
 });
