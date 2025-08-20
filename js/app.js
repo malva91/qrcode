@@ -1,3 +1,5 @@
+import QRCode from 'qrcode';
+
 // ===== VIKING QR FORGE - VERSIONE SEMPLIFICATA =====
 class VikingQRApp {
     constructor() {
