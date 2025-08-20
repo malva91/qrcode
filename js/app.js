@@ -1,23 +1,29 @@
-import { SimpleQR } from './qr-engine/simple-qr.js';
+import QRCodeStyling from 'qr-code-styling';
 
-// ===== QR FORGE SEMPLIFICATO =====
-class SimpleQRApp {
+// ===== QR FORGE CON QR-CODE-STYLING =====
+class VikingQRApp {
     constructor() {
         this.config = {
             text: 'https://esempio.com',
-            size: 256,
-            errorCorrection: 'M',
-            foregroundColor: '#000000',
-            backgroundColor: '#FFFFFF'
+            width: 300,
+            height: 300,
+            type: 'svg',
+            errorCorrectionLevel: 'M',
+            dotsColor: '#000000',
+            backgroundColor: '#FFFFFF',
+            dotsType: 'square',
+            cornersSquareType: 'square',
+            cornersDotType: 'square'
         };
         
+        this.qrCode = null;
         this.init();
     }
     
     init() {
         this.setupEventListeners();
         this.generateQR();
-        console.log('🔧 QR Generator semplificato inizializzato');
+        console.log('🔧 Viking QR Generator inizializzato con qr-code-styling');
     }
     
     setupEventListeners() {
@@ -29,20 +35,22 @@ class SimpleQRApp {
         
         // Dimensione
         document.getElementById('size').addEventListener('input', (e) => {
-            this.config.size = parseInt(e.target.value);
-            document.getElementById('size-value').textContent = this.config.size;
+            const size = parseInt(e.target.value);
+            this.config.width = size;
+            this.config.height = size;
+            document.getElementById('size-value').textContent = size;
             this.generateQR();
         });
         
         // Correzione errore
         document.getElementById('error-correction').addEventListener('change', (e) => {
-            this.config.errorCorrection = e.target.value;
+            this.config.errorCorrectionLevel = e.target.value;
             this.generateQR();
         });
         
         // Colori
         document.getElementById('foreground-color').addEventListener('change', (e) => {
-            this.config.foregroundColor = e.target.value;
+            this.config.dotsColor = e.target.value;
             this.generateQR();
         });
         
@@ -51,7 +59,13 @@ class SimpleQRApp {
             this.generateQR();
         });
         
-        // Preset semplificati
+        // Stile dots
+        document.getElementById('dots-style').addEventListener('change', (e) => {
+            this.config.dotsType = e.target.value;
+            this.generateQR();
+        });
+        
+        // Preset
         document.querySelectorAll('.preset-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const preset = e.currentTarget.dataset.preset;
@@ -72,38 +86,77 @@ class SimpleQRApp {
         });
         document.querySelector(`[data-preset="${presetName}"]`).classList.add('active');
         
-        // Preset colori semplificati
         const presets = {
-            classic: { fg: '#000000', bg: '#FFFFFF' },
-            blue: { fg: '#2F4F4F', bg: '#B0E0E6' },
-            brown: { fg: '#8B4513', bg: '#F5F5DC' },
-            dark: { fg: '#FFFFFF', bg: '#1a1a1a' }
+            classic: { 
+                dotsColor: '#000000', 
+                backgroundColor: '#FFFFFF',
+                dotsType: 'square'
+            },
+            rounded: { 
+                dotsColor: '#2F4F4F', 
+                backgroundColor: '#B0E0E6',
+                dotsType: 'rounded'
+            },
+            dots: { 
+                dotsColor: '#8B4513', 
+                backgroundColor: '#F5F5DC',
+                dotsType: 'dots'
+            },
+            extra_rounded: { 
+                dotsColor: '#FFFFFF', 
+                backgroundColor: '#1a1a1a',
+                dotsType: 'extra-rounded'
+            }
         };
         
         const preset = presets[presetName];
         if (preset) {
-            this.config.foregroundColor = preset.fg;
-            this.config.backgroundColor = preset.bg;
+            this.config.dotsColor = preset.dotsColor;
+            this.config.backgroundColor = preset.backgroundColor;
+            this.config.dotsType = preset.dotsType;
             
-            document.getElementById('foreground-color').value = preset.fg;
-            document.getElementById('background-color').value = preset.bg;
+            document.getElementById('foreground-color').value = preset.dotsColor;
+            document.getElementById('background-color').value = preset.backgroundColor;
+            document.getElementById('dots-style').value = preset.dotsType;
             
             this.generateQR();
         }
     }
     
-    async generateQR() {
+    generateQR() {
         try {
-            // Genera SVG
-            const svgString = SimpleQR.generateSVG(this.config.text, {
-                size: this.config.size,
-                errorCorrection: this.config.errorCorrection,
-                foregroundColor: this.config.foregroundColor,
-                backgroundColor: this.config.backgroundColor
+            // Crea nuovo QR code con configurazione aggiornata
+            this.qrCode = new QRCodeStyling({
+                width: this.config.width,
+                height: this.config.height,
+                type: this.config.type,
+                data: this.config.text,
+                dotsOptions: {
+                    color: this.config.dotsColor,
+                    type: this.config.dotsType
+                },
+                backgroundOptions: {
+                    color: this.config.backgroundColor
+                },
+                cornersSquareOptions: {
+                    color: this.config.dotsColor,
+                    type: this.config.cornersSquareType
+                },
+                cornersDotOptions: {
+                    color: this.config.dotsColor,
+                    type: this.config.cornersDotType
+                },
+                qrOptions: {
+                    errorCorrectionLevel: this.config.errorCorrectionLevel
+                }
             });
             
-            // Mostra nel canvas
-            await this.displaySVGInCanvas(svgString);
+            // Pulisci il container precedente
+            const container = document.getElementById('qr-container');
+            container.innerHTML = '';
+            
+            // Aggiungi il nuovo QR
+            this.qrCode.append(container);
             
             this.showStatus('success', '✅ QR Code generato correttamente');
             
@@ -113,92 +166,65 @@ class SimpleQRApp {
         }
     }
     
-    async displaySVGInCanvas(svgString) {
-        const canvas = document.getElementById('qr-canvas');
-        const ctx = canvas.getContext('2d');
-        
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            
-            img.onload = () => {
-                canvas.width = this.config.size;
-                canvas.height = this.config.size;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                resolve();
-            };
-            
-            img.onerror = reject;
-            
-            const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
-            img.src = URL.createObjectURL(svgBlob);
-        });
-    }
-    
     downloadPNG() {
+        if (!this.qrCode) {
+            this.showStatus('error', '❌ Nessun QR Code da scaricare');
+            return;
+        }
+        
         try {
-            SimpleQR.generatePNG(this.config.text, {
-                size: this.config.size,
-                errorCorrection: this.config.errorCorrection,
-                foregroundColor: this.config.foregroundColor,
-                backgroundColor: this.config.backgroundColor
-            }).then(blob => {
-                const link = document.createElement('a');
-                link.download = `qr-code-${Date.now()}.png`;
-                link.href = URL.createObjectURL(blob);
-                link.click();
-                URL.revokeObjectURL(link.href);
-                
-                this.showStatus('success', '📱 PNG scaricato!');
-            }).catch(error => {
-                console.error('Errore PNG:', error);
-                this.showStatus('error', '❌ Errore nella generazione PNG');
+            this.qrCode.download({
+                name: `viking-qr-${Date.now()}`,
+                extension: 'png'
             });
+            
+            this.showStatus('success', '📱 PNG scaricato!');
         } catch (error) {
-            console.error('Errore generazione PNG:', error);
-            this.showStatus('error', '❌ Errore nella generazione PNG');
+            console.error('Errore download PNG:', error);
+            this.showStatus('error', '❌ Errore nel download PNG');
         }
     }
     
-    async downloadSVG() {
+    downloadSVG() {
+        if (!this.qrCode) {
+            this.showStatus('error', '❌ Nessun QR Code da scaricare');
+            return;
+        }
+        
         try {
-            const svgString = SimpleQR.generateSVG(this.config.text, {
-                size: this.config.size,
-                errorCorrection: this.config.errorCorrection,
-                foregroundColor: this.config.foregroundColor,
-                backgroundColor: this.config.backgroundColor
+            this.qrCode.download({
+                name: `viking-qr-${Date.now()}`,
+                extension: 'svg'
             });
             
-            const blob = new Blob([svgString], { type: 'image/svg+xml' });
-            const link = document.createElement('a');
-            link.download = `qr-code-${Date.now()}.svg`;
-            link.href = URL.createObjectURL(blob);
-            link.click();
-            URL.revokeObjectURL(link.href);
-            
             this.showStatus('success', '🎨 SVG scaricato!');
-            
         } catch (error) {
-            console.error('Errore generazione SVG:', error);
-            this.showStatus('error', '❌ Errore nella generazione SVG');
+            console.error('Errore download SVG:', error);
+            this.showStatus('error', '❌ Errore nel download SVG');
         }
     }
     
     reset() {
         this.config = {
             text: 'https://esempio.com',
-            size: 256,
-            errorCorrection: 'M',
-            foregroundColor: '#000000',
-            backgroundColor: '#FFFFFF'
+            width: 300,
+            height: 300,
+            type: 'svg',
+            errorCorrectionLevel: 'M',
+            dotsColor: '#000000',
+            backgroundColor: '#FFFFFF',
+            dotsType: 'square',
+            cornersSquareType: 'square',
+            cornersDotType: 'square'
         };
         
         document.getElementById('qr-text').value = this.config.text;
-        document.getElementById('size').value = this.config.size;
-        document.getElementById('size-value').textContent = this.config.size;
-        document.getElementById('error-correction').value = this.config.errorCorrection;
-        document.getElementById('foreground-color').value = this.config.foregroundColor;
+        document.getElementById('size').value = this.config.width;
+        document.getElementById('size-value').textContent = this.config.width;
+        document.getElementById('error-correction').value = this.config.errorCorrectionLevel;
+        document.getElementById('foreground-color').value = this.config.dotsColor;
         document.getElementById('background-color').value = this.config.backgroundColor;
+        document.getElementById('dots-style').value = this.config.dotsType;
         
         this.applyPreset('classic');
         this.showStatus('success', '🔄 Impostazioni ripristinate');
@@ -225,5 +251,5 @@ class SimpleQRApp {
 
 // Inizializzazione
 document.addEventListener('DOMContentLoaded', () => {
-    window.qrApp = new SimpleQRApp();
+    window.qrApp = new VikingQRApp();
 });

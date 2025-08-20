@@ -29,23 +29,23 @@
                 </div>
 
                 <div class="section">
-                    <h3 class="section-title">Stile</h3>
+                    <h3 class="section-title">Stili Preset</h3>
                     <div class="presets-grid">
                         <button class="preset-btn active" data-preset="classic">
                             <div class="preset-preview" style="background: #000000;"></div>
                             <span>Classico</span>
                         </button>
-                        <button class="preset-btn" data-preset="blue">
-                            <div class="preset-preview" style="background: #2F4F4F;"></div>
-                            <span>Blu</span>
+                        <button class="preset-btn" data-preset="rounded">
+                            <div class="preset-preview" style="background: #2F4F4F; border-radius: 4px;"></div>
+                            <span>Arrotondato</span>
                         </button>
-                        <button class="preset-btn" data-preset="brown">
-                            <div class="preset-preview" style="background: #8B4513;"></div>
-                            <span>Marrone</span>
+                        <button class="preset-btn" data-preset="dots">
+                            <div class="preset-preview" style="background: #8B4513; border-radius: 50%;"></div>
+                            <span>Punti</span>
                         </button>
-                        <button class="preset-btn" data-preset="dark">
-                            <div class="preset-preview" style="background: #FFFFFF; border: 2px solid #1a1a1a;"></div>
-                            <span>Scuro</span>
+                        <button class="preset-btn" data-preset="extra_rounded">
+                            <div class="preset-preview" style="background: #FFFFFF; border: 2px solid #1a1a1a; border-radius: 8px;"></div>
+                            <span>Extra Round</span>
                         </button>
                     </div>
                 </div>
@@ -54,9 +54,9 @@
                     <div class="controls-grid">
                         <div class="control-group">
                             <label class="label">
-                                Dimensione: <span id="size-value">256</span>px
+                                Dimensione: <span id="size-value">300</span>px
                             </label>
-                            <input type="range" id="size" min="200" max="500" value="256" step="32">
+                            <input type="range" id="size" min="200" max="500" value="300" step="50">
                         </div>
                         
                         <div class="control-group">
@@ -86,6 +86,18 @@
                 </div>
 
                 <div class="section">
+                    <div class="control-group">
+                        <label class="label">Stile Moduli</label>
+                        <select id="dots-style">
+                            <option value="square">Quadrati</option>
+                            <option value="rounded">Arrotondati</option>
+                            <option value="dots">Punti</option>
+                            <option value="extra-rounded">Extra Arrotondati</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section">
                     <button id="reset-btn" class="btn-secondary">🔄 Reimposta</button>
                 </div>
             </div>
@@ -97,7 +109,7 @@
                 </div>
                 
                 <div class="qr-preview">
-                    <canvas id="qr-canvas" width="256" height="256"></canvas>
+                    <div id="qr-container"></div>
                 </div>
 
                 <div class="scan-status" id="scan-status">
@@ -113,7 +125,7 @@
         </main>
 
         <footer class="footer">
-            <p>🔧 Generatore QR semplice e funzionale</p>
+            <p>🔧 Generatore QR con qr-code-styling</p>
         </footer>
     </div>
 
