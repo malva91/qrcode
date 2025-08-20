@@ -63,7 +63,7 @@ body {
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
   text-align: center;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background: linear-gradient(135deg, #d4af37, #f4e4a6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

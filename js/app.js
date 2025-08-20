@@ -1,23 +1,23 @@
 import QRCodeStyling from 'qr-code-styling';
 
-// ===== QR DESIGNER PRO - VERSIONE SEMPLIFICATA =====
-class QRDesignerPro {
+// ===== QR FORGE VICHINGO =====
+class QRForgeVichingo {
     constructor() {
         this.config = {
             text: 'https://esempio.com',
             width: 400,
             height: 400,
             type: 'svg',
-            errorCorrectionLevel: 'H',
+            errorCorrectionLevel: 'M',
             dotsColor: '#2c3e50',
             backgroundColor: '#ffffff',
             dotsType: 'square',
             cornersSquareType: 'square',
             cornersDotType: 'square',
             logoImage: null,
+            logoPosition: 'center',
             logoScale: 0.25,
-            logoMargin: 8,
-            logoCornerRadius: 12
+            logoMargin: 8
         };
         
         this.qrCode = null;
@@ -28,7 +28,7 @@ class QRDesignerPro {
         this.setupEventListeners();
         this.setupImageUpload();
         this.generateQR();
-        console.log('🎨 QR Designer Pro inizializzato');
+        console.log('⚔️ QR Forge Vichingo inizializzato');
     }
     
     setupImageUpload() {
@@ -100,12 +100,6 @@ class QRDesignerPro {
         });
         
         // Correzione errore
-        document.getElementById('error-correction').addEventListener('change', (e) => {
-            this.config.errorCorrectionLevel = e.target.value;
-            this.generateQR();
-        });
-        
-        // Colori
         document.getElementById('foreground-color').addEventListener('change', (e) => {
             this.config.dotsColor = e.target.value;
             this.generateQR();
@@ -129,6 +123,11 @@ class QRDesignerPro {
         });
         
         // Logo settings
+        document.getElementById('logo-position').addEventListener('change', (e) => {
+            this.config.logoPosition = e.target.value;
+            this.generateQR();
+        });
+        
         document.getElementById('logo-scale').addEventListener('input', (e) => {
             this.config.logoScale = parseFloat(e.target.value);
             document.getElementById('logo-scale-value').textContent = Math.round(e.target.value * 100);
@@ -138,12 +137,6 @@ class QRDesignerPro {
         document.getElementById('logo-margin').addEventListener('input', (e) => {
             this.config.logoMargin = parseInt(e.target.value);
             document.getElementById('logo-margin-value').textContent = e.target.value;
-            this.generateQR();
-        });
-        
-        document.getElementById('logo-corner-radius').addEventListener('input', (e) => {
-            this.config.logoCornerRadius = parseInt(e.target.value);
-            document.getElementById('logo-corner-radius-value').textContent = e.target.value;
             this.generateQR();
         });
         
@@ -227,6 +220,12 @@ class QRDesignerPro {
     
     generateQR() {
         try {
+            // Se il logo è in modalità background pattern, creiamo un pattern
+            let backgroundImage = null;
+            if (this.config.logoImage && this.config.logoPosition === 'background') {
+                backgroundImage = this.createLogoPattern();
+            }
+            
             const qrOptions = {
                 width: this.config.width,
                 height: this.config.height,
@@ -237,7 +236,8 @@ class QRDesignerPro {
                     type: this.config.dotsType
                 },
                 backgroundOptions: {
-                    color: this.config.backgroundColor
+                    color: this.config.backgroundColor,
+                    ...(backgroundImage && { gradient: backgroundImage })
                 },
                 cornersSquareOptions: {
                     color: this.config.dotsColor,
@@ -252,8 +252,8 @@ class QRDesignerPro {
                 }
             };
             
-            // Add logo if present
-            if (this.config.logoImage) {
+            // Add logo if present and in center position
+            if (this.config.logoImage && this.config.logoPosition === 'center') {
                 qrOptions.imageOptions = {
                     hideBackgroundDots: true,
                     imageSize: this.config.logoScale,
@@ -275,6 +275,30 @@ class QRDesignerPro {
             console.error('Errore generazione QR:', error);
             this.showStatus('error', '❌ Errore nella generazione del QR Code');
         }
+    }
+    
+    createLogoPattern() {
+        // Crea un pattern con il logo come sfondo
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 100;
+        canvas.height = 100;
+        
+        const img = new Image();
+        img.onload = () => {
+            ctx.globalAlpha = 0.1;
+            ctx.drawImage(img, 0, 0, 100, 100);
+        };
+        img.src = this.config.logoImage;
+        
+        return {
+            type: 'radial',
+            rotation: 0,
+            colorStops: [
+                { offset: 0, color: this.config.backgroundColor },
+                { offset: 1, color: this.config.backgroundColor }
+            ]
+        };
     }
     
     downloadPNG() {
@@ -348,33 +372,31 @@ class QRDesignerPro {
             width: 400,
             height: 400,
             type: 'svg',
-            errorCorrectionLevel: 'H',
+            errorCorrectionLevel: 'M',
             dotsColor: '#2c3e50',
             backgroundColor: '#ffffff',
             dotsType: 'square',
             cornersSquareType: 'square',
             cornersDotType: 'square',
             logoImage: null,
+            logoPosition: 'center',
             logoScale: 0.25,
-            logoMargin: 8,
-            logoCornerRadius: 12
+            logoMargin: 8
         };
         
         // Reset UI
         document.getElementById('qr-text').value = this.config.text;
         document.getElementById('size').value = this.config.width;
         document.getElementById('size-value').textContent = this.config.width;
-        document.getElementById('error-correction').value = this.config.errorCorrectionLevel;
         document.getElementById('foreground-color').value = this.config.dotsColor;
         document.getElementById('background-color').value = this.config.backgroundColor;
         document.getElementById('dots-style').value = this.config.dotsType;
         document.getElementById('corners-style').value = this.config.cornersSquareType;
+        document.getElementById('logo-position').value = this.config.logoPosition;
         document.getElementById('logo-scale').value = this.config.logoScale;
         document.getElementById('logo-scale-value').textContent = Math.round(this.config.logoScale * 100);
         document.getElementById('logo-margin').value = this.config.logoMargin;
         document.getElementById('logo-margin-value').textContent = this.config.logoMargin;
-        document.getElementById('logo-corner-radius').value = this.config.logoCornerRadius;
-        document.getElementById('logo-corner-radius-value').textContent = this.config.logoCornerRadius;
         
         this.removeLogo();
         this.applyTemplate('classic');
@@ -402,5 +424,5 @@ class QRDesignerPro {
 
 // ===== INIZIALIZZAZIONE =====
 document.addEventListener('DOMContentLoaded', () => {
-    window.qrApp = new QRDesignerPro();
+    window.qrApp = new QRForgeVichingo();
 });
