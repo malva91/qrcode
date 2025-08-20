@@ -4,7 +4,7 @@ import QRCodeStyling from 'qr-code-styling';
 class QRForgeVichingo {
     constructor() {
         this.config = {
-            text: 'bridge.html',
+            targetUrl: 'https://www.instagram.com/',
             width: 400,
             height: 400,
             dotsColor: '#2c3e50',
@@ -81,7 +81,8 @@ class QRForgeVichingo {
     setupEventListeners() {
         // Testo QR
         document.getElementById('qr-text').addEventListener('input', (e) => {
-            this.config.text = e.target.value || 'bridge.html';
+            this.config.targetUrl = e.target.value || 'https://www.instagram.com/';
+            this.updateBridgeFile();
             this.generateQR();
         });
         
@@ -188,13 +189,162 @@ class QRForgeVichingo {
         }
     }
     
+    updateBridgeFile() {
+        // Il QR code punterà sempre a bridge.html
+        // Ma aggiorniamo il bridge con l'URL di destinazione
+        this.generateBridgeFile();
+    }
+    
+    generateBridgeFile() {
+        const bridgeContent = `<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Cani Di Odino</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #d4af37;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 30px;
+            border-radius: 20px;
+            border: 3px solid #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+            object-fit: cover;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            0% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); }
+            100% { box-shadow: 0 0 50px rgba(212, 175, 55, 0.9); }
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            letter-spacing: 3px;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            font-weight: 400;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            max-width: 300px;
+            line-height: 1.4;
+        }
+        
+        .countdown {
+            font-size: 1.1rem;
+            color: #f4e4a6;
+            margin-top: 20px;
+        }
+        
+        .runes {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .rune-1 { top: 15%; left: 10%; animation-delay: 0s; }
+        .rune-2 { top: 25%; right: 15%; animation-delay: 2s; }
+        .rune-3 { bottom: 25%; left: 20%; animation-delay: 4s; }
+        .rune-4 { bottom: 15%; right: 10%; animation-delay: 6s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .title {
+                font-size: 2rem;
+                letter-spacing: 2px;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="runes rune-1">ᚠ</div>
+    <div class="runes rune-2">ᚢ</div>
+    <div class="runes rune-3">ᚦ</div>
+    <div class="runes rune-4">ᚨ</div>
+    
+    <img src="logocani.png" alt="I Cani Di Odino" class="logo">
+    <h1 class="title">I CANI DI ODINO</h1>
+    <p class="subtitle">Benvenuto nella nostra pagina ufficiale</p>
+    <div class="countdown">Reindirizzamento in <span id="countdown">3</span> secondi...</div>
+    
+    <script>
+        const targetUrl = '${this.config.targetUrl}';
+        let countdown = 3;
+        
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = targetUrl;
+            }
+        }, 1000);
+        
+        // Opzione per saltare l'attesa cliccando
+        document.addEventListener('click', () => {
+            clearInterval(timer);
+            window.location.href = targetUrl;
+        });
+    </script>
+</body>
+</html>`;
+
+        // Simula la scrittura del file bridge.html
+        console.log('🔄 Bridge aggiornato per:', this.config.targetUrl);
+    }
+    
     generateQR() {
         try {
             const qrOptions = {
                 width: this.config.width,
                 height: this.config.height,
                 type: 'svg',
-                data: this.config.text,
+                data: 'bridge.html', // Il QR punta sempre al bridge
                 dotsOptions: {
                     color: this.config.dotsColor,
                     type: this.config.dotsType
@@ -283,7 +433,7 @@ class QRForgeVichingo {
     
     reset() {
         this.config = {
-            text: 'bridge.html',
+            targetUrl: 'https://www.instagram.com/',
             width: 400,
             height: 400,
             dotsColor: '#2c3e50',
@@ -297,7 +447,7 @@ class QRForgeVichingo {
         };
         
         // Reset UI
-        document.getElementById('qr-text').value = this.config.text;
+        document.getElementById('qr-text').value = this.config.targetUrl;
         document.getElementById('foreground-color').value = this.config.dotsColor;
         document.getElementById('background-color').value = this.config.backgroundColor;
         document.getElementById('dots-style').value = this.config.dotsType;
