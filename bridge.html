@@ -19,128 +19,102 @@
             color: #d4af37;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
-            animation: shimmer 3s ease-in-out infinite alternate;
-        }
-        
-        @keyframes shimmer {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.7; }
-        }
-        
-        .bridge-container {
+            padding: 20px;
             text-align: center;
-            z-index: 10;
-            position: relative;
-            animation: fadeInUp 1s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         .logo {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 2rem;
-            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 30px;
+            border-radius: 20px;
             border: 3px solid #d4af37;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
-            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
             object-fit: cover;
+            animation: glow 2s ease-in-out infinite alternate;
         }
         
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(212, 175, 55, 0.5); }
-            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(212, 175, 55, 0.8); }
+        @keyframes glow {
+            0% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); }
+            100% { box-shadow: 0 0 50px rgba(212, 175, 55, 0.9); }
         }
         
         .title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            letter-spacing: 3px;
         }
         
         .subtitle {
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-size: 1.3rem;
             font-weight: 400;
-            margin-bottom: 2rem;
+            margin-bottom: 40px;
             opacity: 0.9;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            max-width: 300px;
+            line-height: 1.4;
         }
         
-        .loading-bar {
-            width: 300px;
-            height: 4px;
-            background: rgba(212, 175, 55, 0.2);
-            border-radius: 2px;
-            margin: 0 auto;
-            overflow: hidden;
-            position: relative;
+        .cta-button {
+            background: linear-gradient(135deg, #d4af37, #f4e4a6);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
         }
         
-        .loading-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #d4af37, #f4e4a6, #d4af37);
-            border-radius: 2px;
-            animation: loading 3s ease-in-out forwards;
-            transform: translateX(-100%);
-        }
-        
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(0%); }
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
         }
         
         .runes {
             position: absolute;
-            font-size: 2rem;
-            opacity: 0.1;
-            animation: float 6s ease-in-out infinite;
+            font-size: 1.5rem;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
         }
         
-        .rune-1 { top: 10%; left: 10%; animation-delay: 0s; }
-        .rune-2 { top: 20%; right: 15%; animation-delay: 1s; }
-        .rune-3 { bottom: 20%; left: 20%; animation-delay: 2s; }
-        .rune-4 { bottom: 10%; right: 10%; animation-delay: 3s; }
+        .rune-1 { top: 15%; left: 10%; animation-delay: 0s; }
+        .rune-2 { top: 25%; right: 15%; animation-delay: 2s; }
+        .rune-3 { bottom: 25%; left: 20%; animation-delay: 4s; }
+        .rune-4 { bottom: 15%; right: 10%; animation-delay: 6s; }
         
         @keyframes float {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
         }
         
-        @media (max-width: 640px) {
+        @media (max-width: 480px) {
             .logo {
-                width: 100px;
-                height: 100px;
+                width: 120px;
+                height: 120px;
             }
             
-            .loading-bar {
-                width: 250px;
+            .title {
+                font-size: 2rem;
+                letter-spacing: 2px;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                max-width: 280px;
+            }
+            
+            .cta-button {
+                padding: 12px 25px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -151,19 +125,11 @@
     <div class="runes rune-3">ᚦ</div>
     <div class="runes rune-4">ᚨ</div>
     
-    <div class="bridge-container">
-        <img src="logocani.png" alt="I Cani Di Odino" class="logo">
-        <h1 class="title">I CANI DI ODINO</h1>
-        <p class="subtitle">ti stanno per collegare alla pagina</p>
-        <div class="loading-bar">
-            <div class="loading-progress"></div>
-        </div>
-    </div>
-    
-    <script>
-        setTimeout(() => {
-            window.location.href = 'qr-generator.html';
-        }, 3500);
-    </script>
+    <img src="logocani.png" alt="I Cani Di Odino" class="logo">
+    <h1 class="title">I CANI DI ODINO</h1>
+    <p class="subtitle">Benvenuto nella nostra pagina ufficiale</p>
+    <button class="cta-button" onclick="window.open('https://www.esempio.com', '_blank')">
+        VISITA IL SITO
+    </button>
 </body>
 </html>
