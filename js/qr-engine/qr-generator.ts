@@ -1,12 +1,12 @@
-import qrcode, { ErrorCorrectLevel } from 'qrcode-generator';
+import qrcode from 'qrcode-generator';
 import { ECLevel, MaskStrategy, QRMatrix, VikingQROptions } from './types.js';
 
 export class QRGenerator {
   private static EC_LEVEL_MAP = {
-    'L': ErrorCorrectLevel.L,
-    'M': ErrorCorrectLevel.M,
-    'Q': ErrorCorrectLevel.Q,
-    'H': ErrorCorrectLevel.H
+    'L': qrcode.ErrorCorrectLevel.L,
+    'M': qrcode.ErrorCorrectLevel.M,
+    'Q': qrcode.ErrorCorrectLevel.Q,
+    'H': qrcode.ErrorCorrectLevel.H
   };
 
   static generate(text: string, options: VikingQROptions = {}): QRMatrix {
