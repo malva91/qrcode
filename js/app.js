@@ -357,13 +357,6 @@ class VikingQRApp {
     // ===== GENERAZIONE QR CODE =====
     async generateQR() {
         try {
-            // Attendi che le librerie siano caricate
-            if (typeof QRCode === 'undefined') {
-                console.warn('⏳ QRCode non ancora caricato, riprovo...');
-                setTimeout(() => this.generateQR(), 100);
-                return;
-            }
-            
             const canvas = document.getElementById('qr-canvas');
             const ctx = canvas.getContext('2d');
             
@@ -712,16 +705,7 @@ class VikingQRApp {
 
 // ===== INIZIALIZZAZIONE APP =====
 document.addEventListener('DOMContentLoaded', () => {
-    // Attendi che le librerie siano caricate
-    function initApp() {
-        if (typeof QRCode !== 'undefined') {
-            window.vikingApp = new VikingQRApp();
-            console.log('🚀 Viking QR Forge caricato completamente');
-        } else {
-            console.log('⏳ Attendo caricamento librerie...');
-            setTimeout(initApp, 100);
-        }
-    }
-    
-    initApp();
+    // Inizializza direttamente - le librerie sono già caricate
+    window.vikingApp = new VikingQRApp();
+    console.log('🚀 Viking QR Forge caricato completamente');
 });

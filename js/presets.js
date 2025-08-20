@@ -68,8 +68,10 @@ const vikingPresets = {
 // ===== FUNZIONI UTILITY PER PRESET =====
 function applyPreset(presetKey) {
     const preset = vikingPresets[presetKey];
-    if (!preset) return;
+    if (!preset) {
         console.warn(`⚠️ Preset non trovato: ${presetKey}`);
+        return;
+    }
     
     const config = preset.config;
     
