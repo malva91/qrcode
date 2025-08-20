@@ -8,22 +8,53 @@ class QRScanValidator {
     
     initWorker() {
         // Usa jsQR per la validazione se disponibile
-        if (typeof jsQR !== 'undefined') {
-            console.log('📱 Validatore QR inizializzato con jsQR');
-        } else {
-            console.warn('⚠️ jsQR non disponibile - validazione limitata');
+        const checkJsQR = () => {
+            if (typeof jsQR !== 'undefined') {
+                console.log('📱 Validatore QR inizializzato con jsQR');
+                return true;
+            } else {
+                console.warn('⚠️ jsQR non ancora disponibile - riprovo...');
+                setTimeout(checkJsQR, 100);
+                return false;
+            }
+        };
+        
+        checkJsQR();
+    }
+    
+    // ===== VERIFICA DISPONIBILITÀ JSQR =====
+    isJsQRAvailable() {
+        return typeof jsQR !== 'undefined';
+    }
+    
+    // ===== ATTENDI JSQR =====
+    async waitForJsQR(timeout = 5000) {
+        const start = Date.now();
+        
+        while (!this.isJsQRAvailable() && (Date.now() - start) < timeout) {
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
+        
+        return this.isJsQRAvailable();
     }
     
     // ===== VALIDAZIONE PRINCIPALE =====
     async validateQRCode(canvas, config) {
         try {
+            // Attendi jsQR se necessario
+            if (!this.isJsQRAvailable()) {
+                const available = await this.waitForJsQR();
+                if (!available) {
+                    throw new Error('jsQR non disponibile per la validazione');
+                }
+            }
+            
             const ctx = canvas.getContext('2d');
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             
             // Tenta decodifica con jsQR
             let scanResult = null;
-            if (typeof jsQR !== 'undefined') {
+            if (this.isJsQRAvailable()) {
                 scanResult = jsQR(imageData.data, imageData.width, imageData.height);
             }
             

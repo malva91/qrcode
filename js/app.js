@@ -357,6 +357,13 @@ class VikingQRApp {
     // ===== GENERAZIONE QR CODE =====
     async generateQR() {
         try {
+            // Attendi che le librerie siano caricate
+            if (typeof QRCode === 'undefined') {
+                console.warn('⏳ QRCode non ancora caricato, riprovo...');
+                setTimeout(() => this.generateQR(), 100);
+                return;
+            }
+            
             const canvas = document.getElementById('qr-canvas');
             const ctx = canvas.getContext('2d');
             
@@ -366,26 +373,6 @@ class VikingQRApp {
             
             // Update config from UI
             this.updateConfigFromUI();
-            
-            // Determina colore di sfondo
-            let backgroundColor = this.config.backgroundColor;
-            if (this.config.useGradient) {
-                // Crea gradiente
-                const gradient = ctx.createLinearGradient(
-                    0, 0,
-                    Math.cos(this.config.gradientAngle * Math.PI / 180) * this.config.size,
-                    Math.sin(this.config.gradientAngle * Math.PI / 180) * this.config.size
-                );
-                gradient.addColorStop(0, this.config.backgroundColor);
-                gradient.addColorStop(1, this.config.gradientColor);
-                backgroundColor = gradient;
-            }
-            
-            // Configurazione QRCode
-            // Verifica che QRCode sia disponibile
-            if (typeof QRCode === 'undefined') {
-                throw new Error('Libreria QRCode non caricata');
-            }
             
             // Configurazione QRCode
             const qrConfig = {
@@ -423,7 +410,19 @@ class VikingQRApp {
     
     // ===== POST-PROCESSING =====
     applyPostProcessing(canvas, ctx) {
+        // Aspetta un frame per assicurarsi che il QR sia renderizzato
+        requestAnimationFrame(() => {
+            this.doPostProcessing(canvas, ctx);
+        });
+    }
+    
+    // ===== POST-PROCESSING EFFETTIVO =====
+    doPostProcessing(canvas, ctx) {
         // Applica pattern runico se richiesto
+        if (this.config.usePattern) {
+            this.applyGradientOverlay(canvas, ctx);
+        }
+        
         if (this.config.usePattern) {
             this.applyRunicPattern(canvas, ctx);
         }
@@ -432,6 +431,29 @@ class VikingQRApp {
         if (this.currentLogo) {
             this.applyLogo(canvas, ctx);
         }
+    }
+    
+    // ===== APPLICA GRADIENTE OVERLAY =====
+    applyGradientOverlay(canvas, ctx) {
+        // Salva stato
+        ctx.save();
+        
+        // Crea gradiente
+        const gradient = ctx.createLinearGradient(
+            0, 0,
+            Math.cos(this.config.gradientAngle * Math.PI / 180) * this.config.size,
+            Math.sin(this.config.gradientAngle * Math.PI / 180) * this.config.size
+        );
+        gradient.addColorStop(0, this.config.backgroundColor + '80'); // 50% opacity
+        gradient.addColorStop(1, this.config.gradientColor + '80');
+        
+        // Applica gradiente con blend mode
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Ripristina stato
+        ctx.restore();
     }
     
     // ===== APPLICA PATTERN RUNICO =====
@@ -479,12 +501,23 @@ class VikingQRApp {
             const x = (canvas.width - logoSize) / 2;
             const y = (canvas.height - logoSize) / 2;
             
+            // Salva stato
+            ctx.save();
+            
             // Sfondo bianco per il logo
             ctx.fillStyle = 'white';
-            ctx.fillRect(x - padding, y - padding, logoSize + padding * 2, logoSize + padding * 2);
+            ctx.beginPath();
+            ctx.roundRect(x - padding, y - padding, logoSize + padding * 2, logoSize + padding * 2, 8);
+            ctx.fill();
             
             // Disegna logo
             ctx.drawImage(img, x, y, logoSize, logoSize);
+            
+            // Ripristina stato
+            ctx.restore();
+        };
+        img.onerror = () => {
+            console.warn('⚠️ Errore caricamento logo:', this.currentLogo);
         };
         img.crossOrigin = 'anonymous';
         img.src = this.currentLogo;
@@ -679,6 +712,16 @@ class VikingQRApp {
 
 // ===== INIZIALIZZAZIONE APP =====
 document.addEventListener('DOMContentLoaded', () => {
-    window.vikingApp = new VikingQRApp();
-    console.log('🚀 Viking QR Forge caricato completamente');
+    // Attendi che le librerie siano caricate
+    function initApp() {
+        if (typeof QRCode !== 'undefined') {
+            window.vikingApp = new VikingQRApp();
+            console.log('🚀 Viking QR Forge caricato completamente');
+        } else {
+            console.log('⏳ Attendo caricamento librerie...');
+            setTimeout(initApp, 100);
+        }
+    }
+    
+    initApp();
 });

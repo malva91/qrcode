@@ -69,40 +69,66 @@ const vikingPresets = {
 function applyPreset(presetKey) {
     const preset = vikingPresets[presetKey];
     if (!preset) return;
+        console.warn(`⚠️ Preset non trovato: ${presetKey}`);
     
     const config = preset.config;
     
+    // Verifica che gli elementi esistano prima di applicare
+    const elements = {
+        'dot-style': document.getElementById('dot-style'),
+        'corner-style': document.getElementById('corner-style'),
+        'foreground-color': document.getElementById('foreground-color'),
+        'background-color': document.getElementById('background-color'),
+        'use-gradient': document.getElementById('use-gradient'),
+        'gradient-color': document.getElementById('gradient-color'),
+        'gradient-angle': document.getElementById('gradient-angle'),
+        'gradient-angle-value': document.getElementById('gradient-angle-value'),
+        'use-pattern': document.getElementById('use-pattern'),
+        'pattern-intensity': document.getElementById('pattern-intensity'),
+        'pattern-intensity-value': document.getElementById('pattern-intensity-value'),
+        'gradient-controls': document.getElementById('gradient-controls'),
+        'pattern-controls': document.getElementById('pattern-controls')
+    };
+    
+    // Verifica elementi mancanti
+    const missingElements = Object.entries(elements)
+        .filter(([key, element]) => !element)
+        .map(([key]) => key);
+    
+    if (missingElements.length > 0) {
+        console.warn('⚠️ Elementi DOM mancanti:', missingElements);
+        return;
+    }
+    
     // Applica le impostazioni UI
-    document.getElementById('dot-style').value = config.dotStyle;
-    document.getElementById('corner-style').value = config.cornerStyle;
-    document.getElementById('foreground-color').value = config.foregroundColor;
-    document.getElementById('background-color').value = config.backgroundColor;
+    elements['dot-style'].value = config.dotStyle;
+    elements['corner-style'].value = config.cornerStyle;
+    elements['foreground-color'].value = config.foregroundColor;
+    elements['background-color'].value = config.backgroundColor;
     
     // Gestione gradiente
-    document.getElementById('use-gradient').checked = config.useGradient;
-    document.getElementById('gradient-color').value = config.gradientColor;
-    document.getElementById('gradient-angle').value = config.gradientAngle;
-    document.getElementById('gradient-angle-value').textContent = config.gradientAngle;
+    elements['use-gradient'].checked = config.useGradient;
+    elements['gradient-color'].value = config.gradientColor;
+    elements['gradient-angle'].value = config.gradientAngle;
+    elements['gradient-angle-value'].textContent = config.gradientAngle;
     
     // Toggle controlli gradiente
-    const gradientControls = document.getElementById('gradient-controls');
     if (config.useGradient) {
-        gradientControls.classList.remove('hidden');
+        elements['gradient-controls'].classList.remove('hidden');
     } else {
-        gradientControls.classList.add('hidden');
+        elements['gradient-controls'].classList.add('hidden');
     }
     
     // Gestione pattern
-    document.getElementById('use-pattern').checked = config.usePattern;
-    document.getElementById('pattern-intensity').value = config.patternIntensity;
-    document.getElementById('pattern-intensity-value').textContent = config.patternIntensity;
+    elements['use-pattern'].checked = config.usePattern;
+    elements['pattern-intensity'].value = config.patternIntensity;
+    elements['pattern-intensity-value'].textContent = config.patternIntensity;
     
     // Toggle controlli pattern
-    const patternControls = document.getElementById('pattern-controls');
     if (config.usePattern) {
-        patternControls.classList.remove('hidden');
+        elements['pattern-controls'].classList.remove('hidden');
     } else {
-        patternControls.classList.add('hidden');
+        elements['pattern-controls'].classList.add('hidden');
     }
     
     console.log(`🎨 Preset applicato: ${preset.name}`);
