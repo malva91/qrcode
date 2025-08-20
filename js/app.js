@@ -1,4 +1,4 @@
-import QRCode from 'qrcode';
+import { VikingQR } from './qr-engine/viking-qr.js';
 
 // ===== VIKING QR FORGE - VERSIONE SEMPLIFICATA =====
 class VikingQRApp {
@@ -8,14 +8,19 @@ class VikingQRApp {
             size: 256,
             errorCorrection: 'M',
             foregroundColor: '#000000',
-            backgroundColor: '#FFFFFF'
+            backgroundColor: '#FFFFFF',
+            style: 'classic',
+            finderStyle: 'classic',
+            borderStyle: 'none',
+            runeDensity: 1.0
         };
         
         this.presets = {
-            classic: { fg: '#000000', bg: '#FFFFFF', name: 'Classico' },
-            viking: { fg: '#8B4513', bg: '#F5F5DC', name: 'Legno & Osso' },
-            ice: { fg: '#2F4F4F', bg: '#B0E0E6', name: 'Ghiaccio Nordico' },
-            runes: { fg: '#CD853F', bg: '#1a1a1a', name: 'Rune Sacre' }
+            classic: { fg: '#000000', bg: '#FFFFFF', style: 'classic', finder: 'classic', border: 'none', name: 'Classico' },
+            pure: { fg: '#000000', bg: '#FFFFFF', style: 'pure', finder: 'none', border: 'none', name: 'Puro' },
+            viking: { fg: '#8B4513', bg: '#F5F5DC', style: 'runes-romb', finder: 'stone', border: 'viking', name: 'Vichingo' },
+            ice: { fg: '#2F4F4F', bg: '#B0E0E6', style: 'runes-romb', finder: 'stone', border: 'none', name: 'Ghiaccio' },
+            runes: { fg: '#CD853F', bg: '#1a1a1a', style: 'runes-strokes', finder: 'stone', border: 'runes', name: 'Rune Sacre' }
         };
         
         this.init();
@@ -58,6 +63,28 @@ class VikingQRApp {
             this.generateQR();
         });
         
+        // Nuovi controlli
+        document.getElementById('qr-style').addEventListener('change', (e) => {
+            this.config.style = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('finder-style').addEventListener('change', (e) => {
+            this.config.finderStyle = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('border-style').addEventListener('change', (e) => {
+            this.config.borderStyle = e.target.value;
+            this.generateQR();
+        });
+        
+        document.getElementById('rune-density').addEventListener('input', (e) => {
+            this.config.runeDensity = parseFloat(e.target.value);
+            document.getElementById('density-value').textContent = Math.round(this.config.runeDensity * 100) + '%';
+            this.generateQR();
+        });
+        
         // Preset
         document.querySelectorAll('.preset-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -70,6 +97,7 @@ class VikingQRApp {
         document.getElementById('download-png').addEventListener('click', () => this.downloadPNG());
         document.getElementById('download-svg').addEventListener('click', () => this.downloadSVG());
         document.getElementById('reset-btn').addEventListener('click', () => this.reset());
+        document.getElementById('validate-qr').addEventListener('click', () => this.validateQR());
     }
     
     applyPreset(presetName) {
@@ -84,9 +112,15 @@ class VikingQRApp {
         if (preset) {
             this.config.foregroundColor = preset.fg;
             this.config.backgroundColor = preset.bg;
+            this.config.style = preset.style;
+            this.config.finderStyle = preset.finder;
+            this.config.borderStyle = preset.border;
             
             document.getElementById('foreground-color').value = preset.fg;
             document.getElementById('background-color').value = preset.bg;
+            document.getElementById('qr-style').value = preset.style;
+            document.getElementById('finder-style').value = preset.finder;
+            document.getElementById('border-style').value = preset.border;
             
             this.generateQR();
         }
@@ -94,27 +128,25 @@ class VikingQRApp {
     
     async generateQR() {
         try {
-            const canvas = document.getElementById('qr-canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Configurazione QRCode.js
-            const options = {
+            // Configurazione VikingQR
+            const vikingOptions = {
                 errorCorrectionLevel: this.config.errorCorrection,
-                type: 'image/png',
-                quality: 0.92,
-                width: this.config.size,
+                moduleSize: Math.floor(this.config.size / 25), // Calcola dimensione modulo
                 margin: 4,
-                color: {
-                    dark: this.config.foregroundColor,
-                    light: this.config.backgroundColor
-                }
+                style: this.config.style,
+                finderStyle: this.config.finderStyle,
+                borderStyle: this.config.borderStyle,
+                foregroundColor: this.config.foregroundColor,
+                backgroundColor: this.config.backgroundColor,
+                runeDensity: this.config.runeDensity,
+                maskStrategy: 'optimize'
             };
             
-            // Genera QR base
-            await QRCode.toCanvas(canvas, this.config.text, options);
+            // Genera SVG
+            const svgString = VikingQR.generateSVG(this.config.text, vikingOptions);
             
-            // Aggiungi decorazioni vichinghe
-            this.addVikingDecorations(ctx, this.config.size);
+            // Mostra nel canvas
+            await this.displaySVGInCanvas(svgString);
             
             this.showStatus('success', '✅ QR Code generato correttamente');
             
@@ -124,6 +156,29 @@ class VikingQRApp {
         }
     }
     
+    async displaySVGInCanvas(svgString) {
+        const canvas = document.getElementById('qr-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            
+            img.onload = () => {
+                canvas.width = this.config.size;
+                canvas.height = this.config.size;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve();
+            };
+            
+            img.onerror = reject;
+            
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+            img.src = URL.createObjectURL(svgBlob);
+        });
+    }
+    
+    // Mantieni le decorazioni legacy per compatibilità
     addVikingDecorations(ctx, size) {
         const margin = size * 0.08; // 8% margin
         
@@ -285,29 +340,61 @@ class VikingQRApp {
     }
     
     downloadPNG() {
-        const canvas = document.getElementById('qr-canvas');
-        const link = document.createElement('a');
-        link.download = `viking-qr-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        
-        this.showStatus('success', '📱 PNG scaricato!');
+        try {
+            const vikingOptions = {
+                ecLevel: this.config.errorCorrection,
+                moduleSize: Math.floor(this.config.size / 25),
+                margin: 4,
+                style: this.config.style,
+                finderStyle: this.config.finderStyle,
+                borderStyle: this.config.borderStyle,
+                foregroundColor: this.config.foregroundColor,
+                backgroundColor: this.config.backgroundColor,
+                runeDensity: this.config.runeDensity,
+                maskStrategy: 'optimize'
+            };
+            
+            VikingQR.generatePNG(this.config.text, vikingOptions).then(blob => {
+                const link = document.createElement('a');
+                link.download = `viking-qr-${Date.now()}.png`;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+                
+                this.showStatus('success', '📱 PNG scaricato!');
+            }).catch(error => {
+                console.error('Errore PNG:', error);
+                // Fallback al canvas esistente
+                const canvas = document.getElementById('qr-canvas');
+                const link = document.createElement('a');
+                link.download = `viking-qr-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                this.showStatus('success', '📱 PNG scaricato!');
+            });
+        } catch (error) {
+            console.error('Errore generazione PNG:', error);
+            this.showStatus('error', '❌ Errore nella generazione PNG');
+        }
     }
     
     async downloadSVG() {
         try {
-            const options = {
-                errorCorrectionLevel: this.config.errorCorrection,
-                type: 'svg',
-                width: this.config.size,
-                margin: 2,
-                color: {
-                    dark: this.config.foregroundColor,
-                    light: this.config.backgroundColor
-                }
+            const vikingOptions = {
+                ecLevel: this.config.errorCorrection,
+                moduleSize: Math.floor(this.config.size / 25),
+                margin: 4,
+                style: this.config.style,
+                finderStyle: this.config.finderStyle,
+                borderStyle: this.config.borderStyle,
+                foregroundColor: this.config.foregroundColor,
+                backgroundColor: this.config.backgroundColor,
+                runeDensity: this.config.runeDensity,
+                maskStrategy: 'optimize'
             };
             
-            const svgString = await QRCode.toString(this.config.text, options);
+            const svgString = VikingQR.generateSVG(this.config.text, vikingOptions);
             
             const blob = new Blob([svgString], { type: 'image/svg+xml' });
             const link = document.createElement('a');
@@ -330,7 +417,11 @@ class VikingQRApp {
             size: 256,
             errorCorrection: 'M',
             foregroundColor: '#000000',
-            backgroundColor: '#FFFFFF'
+            backgroundColor: '#FFFFFF',
+            style: 'classic',
+            finderStyle: 'classic',
+            borderStyle: 'none',
+            runeDensity: 1.0
         };
         
         document.getElementById('qr-text').value = this.config.text;
@@ -339,9 +430,44 @@ class VikingQRApp {
         document.getElementById('error-correction').value = this.config.errorCorrection;
         document.getElementById('foreground-color').value = this.config.foregroundColor;
         document.getElementById('background-color').value = this.config.backgroundColor;
+        document.getElementById('qr-style').value = this.config.style;
+        document.getElementById('finder-style').value = this.config.finderStyle;
+        document.getElementById('border-style').value = this.config.borderStyle;
+        document.getElementById('rune-density').value = this.config.runeDensity;
         
         this.applyPreset('classic');
         this.showStatus('success', '🔄 Impostazioni ripristinate');
+    }
+    
+    async validateQR() {
+        try {
+            this.showStatus('warning', '🔍 Validazione in corso...');
+            
+            const vikingOptions = {
+                ecLevel: this.config.errorCorrection,
+                moduleSize: Math.floor(this.config.size / 25),
+                margin: 4,
+                style: this.config.style,
+                finderStyle: this.config.finderStyle,
+                borderStyle: this.config.borderStyle,
+                foregroundColor: this.config.foregroundColor,
+                backgroundColor: this.config.backgroundColor,
+                runeDensity: this.config.runeDensity,
+                maskStrategy: 'optimize'
+            };
+            
+            const svgString = VikingQR.generateSVG(this.config.text, vikingOptions);
+            const isValid = await VikingQR.validateQR(svgString);
+            
+            if (isValid) {
+                this.showStatus('success', '✅ QR Code valido e scansionabile!');
+            } else {
+                this.showStatus('error', '❌ QR Code potrebbe non essere scansionabile');
+            }
+        } catch (error) {
+            console.error('Errore validazione:', error);
+            this.showStatus('error', '❌ Errore durante la validazione');
+        }
     }
     
     showStatus(type, message) {

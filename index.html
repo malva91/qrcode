@@ -35,18 +35,66 @@
                             <div class="preset-preview" style="background: #000000;"></div>
                             <span>Classico</span>
                         </button>
+                        <button class="preset-btn" data-preset="pure">
+                            <div class="preset-preview" style="background: #000000; border: 2px solid #ccc;"></div>
+                            <span>Puro</span>
+                        </button>
                         <button class="preset-btn" data-preset="viking">
-                            <div class="preset-preview" style="background: #8B4513;"></div>
-                            <span>Legno & Osso</span>
+                            <div class="preset-preview" style="background: linear-gradient(45deg, #8B4513, #CD853F);"></div>
+                            <span>Vichingo</span>
                         </button>
                         <button class="preset-btn" data-preset="ice">
                             <div class="preset-preview" style="background: #4682B4;"></div>
                             <span>Ghiaccio</span>
                         </button>
                         <button class="preset-btn" data-preset="runes">
-                            <div class="preset-preview" style="background: #CD853F;"></div>
+                            <div class="preset-preview" style="background: radial-gradient(#CD853F, #1a1a1a);"></div>
                             <span>Rune Sacre</span>
                         </button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">Stile Avanzato</h3>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">Stile Moduli</label>
+                            <select id="qr-style">
+                                <option value="classic">Classico</option>
+                                <option value="pure">Puro (senza decorazioni)</option>
+                                <option value="runes-romb">Rombi Runici</option>
+                                <option value="runes-strokes">Tratti Runici</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">Stile Finder</label>
+                            <select id="finder-style">
+                                <option value="classic">Classico</option>
+                                <option value="stone">Pietra Spaccata</option>
+                                <option value="none">Nessuno</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label class="label">Cornice</label>
+                            <select id="border-style">
+                                <option value="none">Nessuna</option>
+                                <option value="viking">Vichinga</option>
+                                <option value="runes">Runica</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label class="label">
+                                Densità Rune: <span id="density-value">100%</span>
+                            </label>
+                            <input type="range" id="rune-density" min="0" max="1" value="1" step="0.1">
+                        </div>
                     </div>
                 </div>
 
@@ -108,6 +156,7 @@
                 <div class="button-group">
                     <button id="download-png" class="btn-primary">📱 Scarica PNG</button>
                     <button id="download-svg" class="btn-primary">🎨 Scarica SVG</button>
+                    <button id="validate-qr" class="btn-secondary">🔍 Valida QR</button>
                 </div>
             </div>
         </main>
