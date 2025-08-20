@@ -209,7 +209,7 @@ input[type="range"]::-moz-range-thumb {
 /* ===== PRESET BUTTONS ===== */
 .presets-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   gap: var(--space-md);
 }
 
@@ -217,6 +217,12 @@ input[type="range"]::-moz-range-thumb {
   .presets-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+@media (max-width: 600px) {
+    .presets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .preset-btn {

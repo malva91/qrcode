@@ -12,10 +12,10 @@ class VikingQRApp {
         };
         
         this.presets = {
-            classic: { fg: '#000000', bg: '#FFFFFF' },
-            viking: { fg: '#8B4513', bg: '#F5F5DC' },
-            ice: { fg: '#4682B4', bg: '#F0F8FF' },
-            fire: { fg: '#8B0000', bg: '#FFFAF0' }
+            classic: { fg: '#000000', bg: '#FFFFFF', name: 'Classico' },
+            viking: { fg: '#8B4513', bg: '#F5F5DC', name: 'Legno & Osso' },
+            ice: { fg: '#2F4F4F', bg: '#B0E0E6', name: 'Ghiaccio Nordico' },
+            runes: { fg: '#CD853F', bg: '#1a1a1a', name: 'Rune Dorate' }
         };
         
         this.init();
@@ -95,6 +95,7 @@ class VikingQRApp {
     async generateQR() {
         try {
             const canvas = document.getElementById('qr-canvas');
+            const ctx = canvas.getContext('2d');
             
             // Configurazione QRCode.js
             const options = {
@@ -102,15 +103,18 @@ class VikingQRApp {
                 type: 'image/png',
                 quality: 0.92,
                 width: this.config.size,
-                margin: 2,
+                margin: 4,
                 color: {
                     dark: this.config.foregroundColor,
                     light: this.config.backgroundColor
                 }
             };
             
-            // Genera QR usando la libreria ufficiale
+            // Genera QR base
             await QRCode.toCanvas(canvas, this.config.text, options);
+            
+            // Aggiungi decorazioni vichinghe
+            this.addVikingDecorations(ctx, this.config.size);
             
             this.showStatus('success', '✅ QR Code generato correttamente');
             
@@ -118,6 +122,84 @@ class VikingQRApp {
             console.error('Errore generazione QR:', error);
             this.showStatus('error', '❌ Errore nella generazione del QR Code');
         }
+    }
+    
+    addVikingDecorations(ctx, size) {
+        const margin = size * 0.08; // 8% margin
+        
+        // Salva il contesto
+        ctx.save();
+        
+        // Bordo decorativo vichingo
+        this.drawVikingBorder(ctx, size, margin);
+        
+        // Angoli decorativi
+        this.drawVikingCorners(ctx, size, margin);
+        
+        // Ripristina il contesto
+        ctx.restore();
+    }
+    
+    drawVikingBorder(ctx, size, margin) {
+        const borderWidth = 3;
+        const cornerSize = margin * 0.6;
+        
+        ctx.strokeStyle = this.config.foregroundColor;
+        ctx.lineWidth = borderWidth;
+        ctx.lineCap = 'square';
+        
+        // Bordo superiore
+        ctx.beginPath();
+        ctx.moveTo(cornerSize, margin/2);
+        ctx.lineTo(size - cornerSize, margin/2);
+        ctx.stroke();
+        
+        // Bordo destro
+        ctx.beginPath();
+        ctx.moveTo(size - margin/2, cornerSize);
+        ctx.lineTo(size - margin/2, size - cornerSize);
+        ctx.stroke();
+        
+        // Bordo inferiore
+        ctx.beginPath();
+        ctx.moveTo(size - cornerSize, size - margin/2);
+        ctx.lineTo(cornerSize, size - margin/2);
+        ctx.stroke();
+        
+        // Bordo sinistro
+        ctx.beginPath();
+        ctx.moveTo(margin/2, size - cornerSize);
+        ctx.lineTo(margin/2, cornerSize);
+        ctx.stroke();
+    }
+    
+    drawVikingCorners(ctx, size, margin) {
+        const cornerSize = margin * 0.4;
+        
+        ctx.fillStyle = this.config.foregroundColor;
+        
+        // Triangoli decorativi agli angoli
+        const corners = [
+            [margin/2, margin/2], // top-left
+            [size - margin/2, margin/2], // top-right
+            [size - margin/2, size - margin/2], // bottom-right
+            [margin/2, size - margin/2] // bottom-left
+        ];
+        
+        corners.forEach(([x, y], index) => {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate((index * Math.PI) / 2);
+            
+            ctx.beginPath();
+            ctx.moveTo(-cornerSize/2, -cornerSize/2);
+            ctx.lineTo(cornerSize/2, 0);
+            ctx.lineTo(-cornerSize/2, cornerSize/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        });
     }
     
     downloadPNG() {
