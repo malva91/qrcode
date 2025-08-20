@@ -8,22 +8,18 @@ class QRForgeVichingo {
             width: 400,
             height: 400,
             type: 'svg',
-            errorCorrectionLevel: 'H', // Sempre H per logo-shaped
+            errorCorrectionLevel: 'M',
             dotsColor: '#2c3e50',
             backgroundColor: '#ffffff',
             dotsType: 'square',
             cornersSquareType: 'square',
             cornersDotType: 'square',
             logoImage: null,
-            logoMode: 'center', // center, background, shaped
             logoScale: 0.25,
-            logoMargin: 8,
-            logoInfluence: 0.8, // Per logo-shaped
-            contrastThreshold: 0.5 // Per logo-shaped
+            logoMargin: 8
         };
         
         this.qrCode = null;
-        this.logoImageData = null;
         this.init();
     }
     
@@ -55,7 +51,6 @@ class QRForgeVichingo {
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.config.logoImage = e.target.result;
-                this.processLogoForShaping(e.target.result);
                 this.updateLogoPreview(e.target.result);
                 this.generateQR();
                 this.showStatus('success', '🖼️ Logo caricato con successo!');
@@ -65,32 +60,6 @@ class QRForgeVichingo {
             console.error('Errore caricamento logo:', error);
             this.showStatus('error', '❌ Errore nel caricamento del logo');
         }
-    }
-    
-    async processLogoForShaping(imageSrc) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Dimensioni ottimali per il processing
-                const size = 200;
-                canvas.width = size;
-                canvas.height = size;
-                
-                // Disegna l'immagine scalata
-                ctx.drawImage(img, 0, 0, size, size);
-                
-                // Ottieni i dati dell'immagine
-                const imageData = ctx.getImageData(0, 0, size, size);
-                this.logoImageData = imageData;
-                
-                resolve(imageData);
-            };
-            img.src = imageSrc;
-        });
     }
     
     updateLogoPreview(imageSrc) {
@@ -105,7 +74,6 @@ class QRForgeVichingo {
     
     removeLogo() {
         this.config.logoImage = null;
-        this.logoImageData = null;
         const previewContainer = document.getElementById('logo-preview');
         if (previewContainer) {
             previewContainer.innerHTML = '<span class="no-logo-text">Nessun logo caricato</span>';
@@ -118,15 +86,6 @@ class QRForgeVichingo {
         // Testo QR
         document.getElementById('qr-text').addEventListener('input', (e) => {
             this.config.text = e.target.value || 'bridge.html';
-            this.generateQR();
-        });
-        
-        // Dimensione
-        document.getElementById('size').addEventListener('input', (e) => {
-            const size = parseInt(e.target.value);
-            this.config.width = size;
-            this.config.height = size;
-            document.getElementById('size-value').textContent = size;
             this.generateQR();
         });
         
@@ -153,13 +112,6 @@ class QRForgeVichingo {
             this.generateQR();
         });
         
-        // Logo mode
-        document.getElementById('logo-mode').addEventListener('change', (e) => {
-            this.config.logoMode = e.target.value;
-            this.toggleLogoShapedControls();
-            this.generateQR();
-        });
-        
         // Logo settings
         document.getElementById('logo-scale').addEventListener('input', (e) => {
             this.config.logoScale = parseFloat(e.target.value);
@@ -170,19 +122,6 @@ class QRForgeVichingo {
         document.getElementById('logo-margin').addEventListener('input', (e) => {
             this.config.logoMargin = parseInt(e.target.value);
             document.getElementById('logo-margin-value').textContent = e.target.value;
-            this.generateQR();
-        });
-        
-        // Logo-shaped controls
-        document.getElementById('logo-influence').addEventListener('input', (e) => {
-            this.config.logoInfluence = parseFloat(e.target.value) / 100;
-            document.getElementById('logo-influence-value').textContent = e.target.value;
-            this.generateQR();
-        });
-        
-        document.getElementById('contrast-threshold').addEventListener('input', (e) => {
-            this.config.contrastThreshold = parseFloat(e.target.value) / 100;
-            document.getElementById('contrast-threshold-value').textContent = e.target.value;
             this.generateQR();
         });
         
@@ -207,13 +146,6 @@ class QRForgeVichingo {
         document.getElementById('reset-btn').addEventListener('click', () => this.reset());
     }
     
-    toggleLogoShapedControls() {
-        const controls = document.getElementById('logo-shaped-controls');
-        if (controls) {
-            controls.style.display = this.config.logoMode === 'shaped' ? 'block' : 'none';
-        }
-    }
-    
     applyTemplate(templateName) {
         // Update active button
         document.querySelectorAll('.template-btn').forEach(btn => {
@@ -228,40 +160,28 @@ class QRForgeVichingo {
                 backgroundColor: '#ffffff',
                 dotsType: 'square',
                 cornersSquareType: 'square',
-                cornersDotType: 'square',
-                logoMode: 'center'
+                cornersDotType: 'square'
             },
             rounded: { 
                 dotsColor: '#3b82f6', 
                 backgroundColor: '#f1f5f9',
                 dotsType: 'rounded',
                 cornersSquareType: 'extra-rounded',
-                cornersDotType: 'dot',
-                logoMode: 'center'
+                cornersDotType: 'dot'
             },
             dots: { 
                 dotsColor: '#8b5cf6', 
                 backgroundColor: '#faf5ff',
                 dotsType: 'dots',
                 cornersSquareType: 'dot',
-                cornersDotType: 'dot',
-                logoMode: 'center'
+                cornersDotType: 'dot'
             },
             professional: { 
                 dotsColor: '#f59e0b', 
                 backgroundColor: '#1f2937',
                 dotsType: 'extra-rounded',
                 cornersSquareType: 'extra-rounded',
-                cornersDotType: 'square',
-                logoMode: 'background'
-            },
-            'logo-shaped': {
-                dotsColor: '#d4af37',
-                backgroundColor: '#1a1a2e',
-                dotsType: 'diamond',
-                cornersSquareType: 'extra-rounded',
-                cornersDotType: 'dot',
-                logoMode: 'shaped'
+                cornersDotType: 'square'
             }
         };
         
@@ -272,286 +192,67 @@ class QRForgeVichingo {
             this.config.dotsType = template.dotsType;
             this.config.cornersSquareType = template.cornersSquareType;
             this.config.cornersDotType = template.cornersDotType;
-            this.config.logoMode = template.logoMode;
             
             // Update UI
             document.getElementById('foreground-color').value = template.dotsColor;
             document.getElementById('background-color').value = template.backgroundColor;
             document.getElementById('dots-style').value = template.dotsType;
             document.getElementById('corners-style').value = template.cornersSquareType;
-            document.getElementById('logo-mode').value = template.logoMode;
             
-            this.toggleLogoShapedControls();
             this.generateQR();
         }
     }
     
     generateQR() {
         try {
-            if (this.config.logoMode === 'shaped' && this.config.logoImage && this.logoImageData) {
-                this.generateLogoShapedQR();
-            } else {
-                this.generateStandardQR();
+            const qrOptions = {
+                width: this.config.width,
+                height: this.config.height,
+                type: this.config.type,
+                data: this.config.text,
+                dotsOptions: {
+                    color: this.config.dotsColor,
+                    type: this.config.dotsType
+                },
+                backgroundOptions: {
+                    color: this.config.backgroundColor
+                },
+                cornersSquareOptions: {
+                    color: this.config.dotsColor,
+                    type: this.config.cornersSquareType
+                },
+                cornersDotOptions: {
+                    color: this.config.dotsColor,
+                    type: this.config.cornersDotType
+                },
+                qrOptions: {
+                    errorCorrectionLevel: this.config.errorCorrectionLevel
+                }
+            };
+            
+            // Add logo if present
+            if (this.config.logoImage) {
+                qrOptions.imageOptions = {
+                    hideBackgroundDots: true,
+                    imageSize: this.config.logoScale,
+                    margin: this.config.logoMargin,
+                    crossOrigin: "anonymous"
+                };
+                qrOptions.image = this.config.logoImage;
             }
+            
+            this.qrCode = new QRCodeStyling(qrOptions);
+            
+            const container = document.getElementById('qr-container');
+            container.innerHTML = '';
+            
+            this.qrCode.append(container);
+            
+            this.showStatus('success', '✅ QR Code generato correttamente');
         } catch (error) {
             console.error('Errore generazione QR:', error);
             this.showStatus('error', '❌ Errore nella generazione del QR Code');
         }
-    }
-    
-    generateStandardQR() {
-        const qrOptions = {
-            width: this.config.width,
-            height: this.config.height,
-            type: this.config.type,
-            data: this.config.text,
-            dotsOptions: {
-                color: this.config.dotsColor,
-                type: this.config.dotsType
-            },
-            backgroundOptions: {
-                color: this.config.backgroundColor
-            },
-            cornersSquareOptions: {
-                color: this.config.dotsColor,
-                type: this.config.cornersSquareType
-            },
-            cornersDotOptions: {
-                color: this.config.dotsColor,
-                type: this.config.cornersDotType
-            },
-            qrOptions: {
-                errorCorrectionLevel: this.config.errorCorrectionLevel
-            }
-        };
-        
-        // Add logo if present and in center mode
-        if (this.config.logoImage && this.config.logoMode === 'center') {
-            qrOptions.imageOptions = {
-                hideBackgroundDots: true,
-                imageSize: this.config.logoScale,
-                margin: this.config.logoMargin,
-                crossOrigin: "anonymous"
-            };
-            qrOptions.image = this.config.logoImage;
-        }
-        
-        this.qrCode = new QRCodeStyling(qrOptions);
-        
-        const container = document.getElementById('qr-container');
-        container.innerHTML = '';
-        
-        this.qrCode.append(container);
-        
-        // Apply background pattern if needed
-        if (this.config.logoImage && this.config.logoMode === 'background') {
-            setTimeout(() => this.applyBackgroundPattern(container), 200);
-        }
-        
-        this.showStatus('success', '✅ QR Code generato correttamente');
-    }
-    
-    generateLogoShapedQR() {
-        if (!this.logoImageData) {
-            this.generateStandardQR();
-            return;
-        }
-        
-        // Genera prima un QR standard per ottenere la matrice
-        const tempQR = new QRCodeStyling({
-            width: this.config.width,
-            height: this.config.height,
-            type: 'canvas',
-            data: this.config.text,
-            dotsOptions: {
-                color: this.config.dotsColor,
-                type: this.config.dotsType
-            },
-            backgroundOptions: {
-                color: this.config.backgroundColor
-            },
-            cornersSquareOptions: {
-                color: this.config.dotsColor,
-                type: this.config.cornersSquareType
-            },
-            cornersDotOptions: {
-                color: this.config.dotsColor,
-                type: this.config.cornersDotType
-            },
-            qrOptions: {
-                errorCorrectionLevel: 'H' // Sempre H per logo-shaped
-            }
-        });
-        
-        const tempContainer = document.createElement('div');
-        tempQR.append(tempContainer);
-        
-        setTimeout(() => {
-            const canvas = tempContainer.querySelector('canvas');
-            if (canvas) {
-                this.applyLogoShaping(canvas);
-            }
-        }, 100);
-    }
-    
-    applyLogoShaping(sourceCanvas) {
-        const container = document.getElementById('qr-container');
-        container.innerHTML = '';
-        
-        // Crea un nuovo canvas per il risultato
-        const resultCanvas = document.createElement('canvas');
-        const ctx = resultCanvas.getContext('2d');
-        resultCanvas.width = this.config.width;
-        resultCanvas.height = this.config.height;
-        
-        // Disegna il QR base
-        ctx.drawImage(sourceCanvas, 0, 0);
-        
-        // Ottieni i dati del QR
-        const qrImageData = ctx.getImageData(0, 0, resultCanvas.width, resultCanvas.height);
-        const qrData = qrImageData.data;
-        
-        // Scala i dati del logo alle dimensioni del QR
-        const logoSize = this.logoImageData.width;
-        const qrSize = resultCanvas.width;
-        const scale = qrSize / logoSize;
-        
-        // Applica il logo shaping
-        for (let y = 0; y < resultCanvas.height; y++) {
-            for (let x = 0; x < resultCanvas.width; x++) {
-                const qrIndex = (y * resultCanvas.width + x) * 4;
-                
-                // Calcola la posizione corrispondente nel logo
-                const logoX = Math.floor(x / scale);
-                const logoY = Math.floor(y / scale);
-                
-                if (logoX < logoSize && logoY < logoSize) {
-                    const logoIndex = (logoY * logoSize + logoX) * 4;
-                    
-                    // Calcola la luminanza del logo
-                    const logoR = this.logoImageData.data[logoIndex];
-                    const logoG = this.logoImageData.data[logoIndex + 1];
-                    const logoB = this.logoImageData.data[logoIndex + 2];
-                    const logoA = this.logoImageData.data[logoIndex + 3];
-                    
-                    if (logoA > 0) { // Solo se il pixel del logo non è trasparente
-                        const luminance = (0.299 * logoR + 0.587 * logoG + 0.114 * logoB) / 255;
-                        
-                        // Determina se il pixel dovrebbe essere scuro o chiaro
-                        const shouldBeDark = luminance < this.config.contrastThreshold;
-                        
-                        // Applica l'influenza del logo
-                        const influence = this.config.logoInfluence;
-                        
-                        if (shouldBeDark) {
-                            // Rendi il pixel più scuro
-                            qrData[qrIndex] = Math.floor(qrData[qrIndex] * (1 - influence) + logoR * influence);
-                            qrData[qrIndex + 1] = Math.floor(qrData[qrIndex + 1] * (1 - influence) + logoG * influence);
-                            qrData[qrIndex + 2] = Math.floor(qrData[qrIndex + 2] * (1 - influence) + logoB * influence);
-                        } else {
-                            // Mantieni o schiarisci il pixel
-                            const bgR = parseInt(this.config.backgroundColor.slice(1, 3), 16);
-                            const bgG = parseInt(this.config.backgroundColor.slice(3, 5), 16);
-                            const bgB = parseInt(this.config.backgroundColor.slice(5, 7), 16);
-                            
-                            qrData[qrIndex] = Math.floor(qrData[qrIndex] * (1 - influence * 0.5) + bgR * influence * 0.5);
-                            qrData[qrIndex + 1] = Math.floor(qrData[qrIndex + 1] * (1 - influence * 0.5) + bgG * influence * 0.5);
-                            qrData[qrIndex + 2] = Math.floor(qrData[qrIndex + 2] * (1 - influence * 0.5) + bgB * influence * 0.5);
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Applica i dati modificati
-        ctx.putImageData(qrImageData, 0, 0);
-        
-        // Aggiungi il canvas al container
-        container.appendChild(resultCanvas);
-        
-        // Aggiorna il riferimento per i download
-        this.qrCode = {
-            download: (options) => {
-                const link = document.createElement('a');
-                link.download = options.name + '.' + options.extension;
-                
-                if (options.extension === 'png') {
-                    link.href = resultCanvas.toDataURL('image/png');
-                } else {
-                    // Per SVG, convertiamo il canvas
-                    link.href = resultCanvas.toDataURL('image/png');
-                }
-                
-                link.click();
-            }
-        };
-        
-        this.showStatus('success', '✨ QR Logo-Shaped generato!');
-    }
-    
-    applyBackgroundPattern(container) {
-        if (!this.config.logoImage) return;
-        
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = this.config.width;
-        canvas.height = this.config.height;
-        
-        // Riempi lo sfondo
-        ctx.fillStyle = this.config.backgroundColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Carica l'immagine del logo
-        const logoImg = new Image();
-        logoImg.crossOrigin = 'anonymous';
-        logoImg.onload = () => {
-            // Pattern più visibile
-            const patternSize = 60;
-            const logoSize = patternSize * 0.7;
-            const logoOffset = (patternSize - logoSize) / 2;
-            
-            // Disegna il pattern del logo
-            for (let x = 0; x < canvas.width; x += patternSize) {
-                for (let y = 0; y < canvas.height; y += patternSize) {
-                    ctx.save();
-                    ctx.globalAlpha = 0.25; // Più visibile
-                    ctx.drawImage(logoImg, x + logoOffset, y + logoOffset, logoSize, logoSize);
-                    ctx.restore();
-                }
-            }
-            
-            // Combina con il QR esistente
-            const existingQR = container.querySelector('canvas, svg');
-            if (existingQR) {
-                const finalCanvas = document.createElement('canvas');
-                const finalCtx = finalCanvas.getContext('2d');
-                finalCanvas.width = this.config.width;
-                finalCanvas.height = this.config.height;
-                
-                // Prima il pattern
-                finalCtx.drawImage(canvas, 0, 0);
-                
-                // Poi il QR con blend mode
-                finalCtx.globalCompositeOperation = 'multiply';
-                if (existingQR.tagName === 'CANVAS') {
-                    finalCtx.drawImage(existingQR, 0, 0);
-                }
-                
-                container.innerHTML = '';
-                container.appendChild(finalCanvas);
-                
-                // Aggiorna il riferimento per i download
-                this.qrCode = {
-                    download: (options) => {
-                        const link = document.createElement('a');
-                        link.download = options.name + '.' + options.extension;
-                        link.href = finalCanvas.toDataURL('image/png');
-                        link.click();
-                    }
-                };
-            }
-        };
-        logoImg.src = this.config.logoImage;
     }
     
     downloadPNG() {
@@ -597,19 +298,12 @@ class QRForgeVichingo {
         
         setTimeout(() => {
             const hasLogo = this.config.logoImage !== null;
-            const logoMode = this.config.logoMode;
             const logoSize = this.config.logoScale;
             
             let successProbability = 0.95;
             
             if (hasLogo) {
-                if (logoMode === 'shaped') {
-                    successProbability = 0.85; // Logo-shaped è più complesso
-                } else if (logoMode === 'background') {
-                    successProbability = 0.9;
-                } else {
-                    successProbability -= (logoSize * 0.3);
-                }
+                successProbability -= (logoSize * 0.3);
             }
             
             const isScannableSimulation = Math.random() < successProbability;
@@ -617,7 +311,7 @@ class QRForgeVichingo {
             if (isScannableSimulation) {
                 this.showStatus('success', '✅ QR Code scansionabile!');
             } else {
-                this.showStatus('warning', '⚠️ QR Code potrebbe avere problemi di scansione - prova a ridurre l\'influenza del logo');
+                this.showStatus('warning', '⚠️ QR Code potrebbe avere problemi di scansione - prova a ridurre la dimensione del logo');
             }
         }, 2000);
     }
@@ -628,40 +322,29 @@ class QRForgeVichingo {
             width: 400,
             height: 400,
             type: 'svg',
-            errorCorrectionLevel: 'H',
+            errorCorrectionLevel: 'M',
             dotsColor: '#2c3e50',
             backgroundColor: '#ffffff',
             dotsType: 'square',
             cornersSquareType: 'square',
             cornersDotType: 'square',
             logoImage: null,
-            logoMode: 'center',
             logoScale: 0.25,
-            logoMargin: 8,
-            logoInfluence: 0.8,
-            contrastThreshold: 0.5
+            logoMargin: 8
         };
         
         // Reset UI
         document.getElementById('qr-text').value = this.config.text;
-        document.getElementById('size').value = this.config.width;
-        document.getElementById('size-value').textContent = this.config.width;
         document.getElementById('foreground-color').value = this.config.dotsColor;
         document.getElementById('background-color').value = this.config.backgroundColor;
         document.getElementById('dots-style').value = this.config.dotsType;
         document.getElementById('corners-style').value = this.config.cornersSquareType;
-        document.getElementById('logo-mode').value = this.config.logoMode;
         document.getElementById('logo-scale').value = this.config.logoScale;
         document.getElementById('logo-scale-value').textContent = Math.round(this.config.logoScale * 100);
         document.getElementById('logo-margin').value = this.config.logoMargin;
         document.getElementById('logo-margin-value').textContent = this.config.logoMargin;
-        document.getElementById('logo-influence').value = this.config.logoInfluence * 100;
-        document.getElementById('logo-influence-value').textContent = Math.round(this.config.logoInfluence * 100);
-        document.getElementById('contrast-threshold').value = this.config.contrastThreshold * 100;
-        document.getElementById('contrast-threshold-value').textContent = Math.round(this.config.contrastThreshold * 100);
         
         this.removeLogo();
-        this.toggleLogoShapedControls();
         this.applyTemplate('classic');
         this.showStatus('success', '🔄 Impostazioni ripristinate');
     }
