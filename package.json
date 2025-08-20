@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "qrcode": "^1.5.3",
-    "jsqr": "^1.4.0"
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "vite": "^5.0.0"
