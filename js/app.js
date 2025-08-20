@@ -28,12 +28,18 @@ class QRForgeVichingo {
                 crossOrigin: "anonymous"
             },
             qrOptions: {
-                errorCorrectionLevel: 'M'
+                errorCorrectionLevel: 'M',
+                typeNumber: 0 // Auto-detect per densità ottimale
             },
             image: null
         };
         
         this.qrCode = null;
+        this.densitySettings = {
+            1: { margin: 4, typeNumber: 0 },    // Bassa densità
+            2: { margin: 2, typeNumber: 0 },    // Normale
+            3: { margin: 1, typeNumber: 0 }     // Alta densità
+        };
         this.init();
     }
     
@@ -65,6 +71,7 @@ class QRForgeVichingo {
         reader.onload = (e) => {
             this.config.image = e.target.result;
             this.updateLogoPreview(e.target.result);
+            this.showLogoControls(true);
             this.generateQR();
             this.showStatus('success', '🖼️ Logo caricato con successo!');
         };
@@ -84,12 +91,20 @@ class QRForgeVichingo {
         }
     }
     
+    showLogoControls(show) {
+        const controls = document.getElementById('logo-controls');
+        if (controls) {
+            controls.style.display = show ? 'block' : 'none';
+        }
+    }
+    
     removeLogo() {
         this.config.image = null;
         const previewContainer = document.getElementById('logo-preview');
         if (previewContainer) {
             previewContainer.innerHTML = '<span class="no-logo-text">Nessun logo caricato</span>';
         }
+        this.showLogoControls(false);
         this.generateQR();
         this.showStatus('success', '🗑️ Logo rimosso');
     }
@@ -101,50 +116,31 @@ class QRForgeVichingo {
             this.generateQR();
         });
         
-        // Colori base
-        document.getElementById('foreground-color').addEventListener('change', (e) => {
-            this.config.dotsOptions.color = e.target.value;
-            this.generateQR();
-        });
-        
+        // Colore sfondo
         document.getElementById('background-color').addEventListener('change', (e) => {
             this.config.backgroundOptions.color = e.target.value;
             this.generateQR();
         });
         
-        // Colori angoli
-        document.getElementById('corners-color').addEventListener('change', (e) => {
-            this.config.cornersSquareOptions.color = e.target.value;
-            this.generateQR();
-        });
-        
-        document.getElementById('corners-dot-color').addEventListener('change', (e) => {
-            this.config.cornersDotOptions.color = e.target.value;
-            this.generateQR();
-        });
-        
-        // Stili
+        // Forma moduli
         document.getElementById('dots-style').addEventListener('change', (e) => {
             this.config.dotsOptions.type = e.target.value;
+            // Mantieni coerenza con angoli
+            this.updateCornerStyles(e.target.value);
             this.generateQR();
         });
         
-        document.getElementById('corners-style').addEventListener('change', (e) => {
-            this.config.cornersSquareOptions.type = e.target.value;
+        // Densità QR
+        document.getElementById('qr-density').addEventListener('input', (e) => {
+            const density = parseInt(e.target.value);
+            this.applyDensitySettings(density);
+            this.updateDensityLabel(density);
             this.generateQR();
         });
         
-        document.getElementById('corners-dot-style').addEventListener('change', (e) => {
-            this.config.cornersDotOptions.type = e.target.value;
-            this.generateQR();
-        });
-        
-        // Dimensioni
-        document.getElementById('qr-size').addEventListener('input', (e) => {
-            const size = parseInt(e.target.value);
-            this.config.width = size;
-            this.config.height = size;
-            document.getElementById('qr-size-value').textContent = size;
+        // Correzione errore
+        document.getElementById('error-correction').addEventListener('change', (e) => {
+            this.config.qrOptions.errorCorrectionLevel = e.target.value;
             this.generateQR();
         });
         
@@ -155,76 +151,9 @@ class QRForgeVichingo {
             this.generateQR();
         });
         
-        document.getElementById('logo-margin').addEventListener('input', (e) => {
-            this.config.imageOptions.margin = parseInt(e.target.value);
-            document.getElementById('logo-margin-value').textContent = e.target.value;
-            this.generateQR();
-        });
-        
-        document.getElementById('logo-border').addEventListener('input', (e) => {
-            this.config.imageOptions.borderWidth = parseInt(e.target.value);
-            document.getElementById('logo-border-value').textContent = e.target.value;
-            this.generateQR();
-        });
-        
-        document.getElementById('logo-border-color').addEventListener('change', (e) => {
-            this.config.imageOptions.borderColor = e.target.value;
-            this.generateQR();
-        });
-        
         document.getElementById('logo-shape').addEventListener('change', (e) => {
             this.config.imageOptions.borderRadius = e.target.value === 'circle' ? 50 : 0;
             this.generateQR();
-        });
-        
-        // Correzione errore
-        document.getElementById('error-correction').addEventListener('change', (e) => {
-            this.config.qrOptions.errorCorrectionLevel = e.target.value;
-            this.generateQR();
-        });
-        
-        document.getElementById('output-type').addEventListener('change', (e) => {
-            this.config.type = e.target.value;
-            this.generateQR();
-        });
-        
-        // Gradiente
-        document.getElementById('enable-gradient').addEventListener('change', (e) => {
-            if (e.target.checked) {
-                this.enableGradient();
-            } else {
-                this.disableGradient();
-            }
-            this.generateQR();
-        });
-        
-        document.getElementById('gradient-type').addEventListener('change', () => {
-            if (document.getElementById('enable-gradient').checked) {
-                this.enableGradient();
-                this.generateQR();
-            }
-        });
-        
-        document.getElementById('gradient-color1').addEventListener('change', () => {
-            if (document.getElementById('enable-gradient').checked) {
-                this.enableGradient();
-                this.generateQR();
-            }
-        });
-        
-        document.getElementById('gradient-color2').addEventListener('change', () => {
-            if (document.getElementById('enable-gradient').checked) {
-                this.enableGradient();
-                this.generateQR();
-            }
-        });
-        
-        document.getElementById('gradient-rotation').addEventListener('input', (e) => {
-            document.getElementById('gradient-rotation-value').textContent = e.target.value;
-            if (document.getElementById('enable-gradient').checked) {
-                this.enableGradient();
-                this.generateQR();
-            }
         });
         
         // Template buttons
@@ -245,37 +174,36 @@ class QRForgeVichingo {
         document.getElementById('reset-btn').addEventListener('click', () => this.reset());
     }
     
-    enableGradient() {
-        const type = document.getElementById('gradient-type').value;
-        const color1 = document.getElementById('gradient-color1').value;
-        const color2 = document.getElementById('gradient-color2').value;
-        const rotation = parseInt(document.getElementById('gradient-rotation').value);
+    updateCornerStyles(dotsType) {
+        // Mantieni coerenza tra moduli e angoli
+        const cornerMapping = {
+            'square': 'square',
+            'rounded': 'extra-rounded',
+            'dots': 'dot',
+            'extra-rounded': 'extra-rounded',
+            'classy': 'square',
+            'classy-rounded': 'extra-rounded'
+        };
         
-        if (type === 'linear') {
-            this.config.dotsOptions.gradient = {
-                type: 'linear',
-                rotation: rotation,
-                colorStops: [
-                    { offset: 0, color: color1 },
-                    { offset: 1, color: color2 }
-                ]
-            };
-        } else {
-            this.config.dotsOptions.gradient = {
-                type: 'radial',
-                colorStops: [
-                    { offset: 0, color: color1 },
-                    { offset: 1, color: color2 }
-                ]
-            };
-        }
-        
-        delete this.config.dotsOptions.color;
+        this.config.cornersSquareOptions.type = cornerMapping[dotsType] || 'square';
+        this.config.cornersDotOptions.type = dotsType === 'dots' ? 'dot' : 'square';
     }
     
-    disableGradient() {
-        delete this.config.dotsOptions.gradient;
-        this.config.dotsOptions.color = document.getElementById('foreground-color').value;
+    applyDensitySettings(density) {
+        const settings = this.densitySettings[density];
+        if (settings) {
+            this.config.imageOptions.margin = settings.margin;
+            this.config.qrOptions.typeNumber = settings.typeNumber;
+        }
+    }
+    
+    updateDensityLabel(density) {
+        const labels = {
+            1: 'Bassa',
+            2: 'Normale', 
+            3: 'Alta'
+        };
+        document.getElementById('qr-density-value').textContent = labels[density] || 'Normale';
     }
     
     applyTemplate(templateName) {
@@ -287,66 +215,35 @@ class QRForgeVichingo {
         
         const templates = {
             classic: { 
-                dotsColor: '#000000', 
                 backgroundColor: '#ffffff',
                 dotsType: 'square',
-                cornersSquareType: 'square',
-                cornersDotType: 'square',
-                cornersColor: '#000000',
-                cornersDotColor: '#000000'
             },
             rounded: { 
-                dotsColor: '#3b82f6', 
                 backgroundColor: '#f1f5f9',
                 dotsType: 'rounded',
-                cornersSquareType: 'extra-rounded',
-                cornersDotType: 'dot',
-                cornersColor: '#1e40af',
-                cornersDotColor: '#3b82f6'
             },
             dots: { 
-                dotsColor: '#8b5cf6', 
                 backgroundColor: '#faf5ff',
                 dotsType: 'dots',
-                cornersSquareType: 'dot',
-                cornersDotType: 'dot',
-                cornersColor: '#7c3aed',
-                cornersDotColor: '#8b5cf6'
             },
             professional: { 
-                dotsColor: '#f59e0b', 
                 backgroundColor: '#1f2937',
                 dotsType: 'classy-rounded',
-                cornersSquareType: 'extra-rounded',
-                cornersDotType: 'square',
-                cornersColor: '#d97706',
-                cornersDotColor: '#f59e0b'
             }
         };
         
         const template = templates[templateName];
         if (template) {
-            // Disable gradient
-            document.getElementById('enable-gradient').checked = false;
-            this.disableGradient();
-            
             // Apply template
-            this.config.dotsOptions.color = template.dotsColor;
             this.config.dotsOptions.type = template.dotsType;
             this.config.backgroundOptions.color = template.backgroundColor;
-            this.config.cornersSquareOptions.color = template.cornersColor;
-            this.config.cornersSquareOptions.type = template.cornersSquareType;
-            this.config.cornersDotOptions.color = template.cornersDotColor;
-            this.config.cornersDotOptions.type = template.cornersDotType;
+            
+            // Update corner styles based on dots type
+            this.updateCornerStyles(template.dotsType);
             
             // Update UI
-            document.getElementById('foreground-color').value = template.dotsColor;
             document.getElementById('background-color').value = template.backgroundColor;
-            document.getElementById('corners-color').value = template.cornersColor;
-            document.getElementById('corners-dot-color').value = template.cornersDotColor;
             document.getElementById('dots-style').value = template.dotsType;
-            document.getElementById('corners-style').value = template.cornersSquareType;
-            document.getElementById('corners-dot-style').value = template.cornersDotType;
             
             this.generateQR();
         }
@@ -459,33 +356,22 @@ class QRForgeVichingo {
                 crossOrigin: "anonymous"
             },
             qrOptions: {
-                errorCorrectionLevel: 'M'
+                errorCorrectionLevel: 'M',
+                typeNumber: 0
             },
             image: null
         };
         
         // Reset UI
         document.getElementById('qr-text').value = this.config.targetUrl;
-        document.getElementById('foreground-color').value = this.config.dotsOptions.color;
         document.getElementById('background-color').value = this.config.backgroundOptions.color;
-        document.getElementById('corners-color').value = this.config.cornersSquareOptions.color;
-        document.getElementById('corners-dot-color').value = this.config.cornersDotOptions.color;
         document.getElementById('dots-style').value = this.config.dotsOptions.type;
-        document.getElementById('corners-style').value = this.config.cornersSquareOptions.type;
-        document.getElementById('corners-dot-style').value = this.config.cornersDotOptions.type;
-        document.getElementById('qr-size').value = this.config.width;
-        document.getElementById('qr-size-value').textContent = this.config.width;
+        document.getElementById('qr-density').value = 2;
+        document.getElementById('qr-density-value').textContent = 'Normale';
         document.getElementById('logo-scale').value = this.config.imageOptions.imageSize;
         document.getElementById('logo-scale-value').textContent = Math.round(this.config.imageOptions.imageSize * 100);
-        document.getElementById('logo-margin').value = this.config.imageOptions.margin;
-        document.getElementById('logo-margin-value').textContent = this.config.imageOptions.margin;
-        document.getElementById('logo-border').value = 0;
-        document.getElementById('logo-border-value').textContent = '0';
         document.getElementById('error-correction').value = this.config.qrOptions.errorCorrectionLevel;
-        document.getElementById('output-type').value = this.config.type;
-        document.getElementById('enable-gradient').checked = false;
-        document.getElementById('gradient-rotation').value = 0;
-        document.getElementById('gradient-rotation-value').textContent = '0';
+        document.getElementById('logo-shape').value = 'square';
         
         this.removeLogo();
         this.applyTemplate('classic');
