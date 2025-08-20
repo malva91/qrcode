@@ -2,11 +2,15 @@ import qrcode from 'qrcode-generator';
 import { ECLevel, MaskStrategy, QRMatrix, VikingQROptions } from './types.js';
 
 export class QRGenerator {
-  private static EC_LEVEL_MAP = {
-    'L': qrcode.ErrorCorrectLevel.L,
-    'M': qrcode.ErrorCorrectLevel.M,
-    'Q': qrcode.ErrorCorrectLevel.Q,
-    'H': qrcode.ErrorCorrectLevel.H
+  private static getECLevel(level: ECLevel) {
+    // Use the constants directly from the library
+    switch (level) {
+      case 'L': return 'L';
+      case 'M': return 'M';
+      case 'Q': return 'Q';
+      case 'H': return 'H';
+      default: return 'H';
+    }
   };
 
   static generate(text: string, options: VikingQROptions = {}): QRMatrix {
@@ -19,7 +23,7 @@ export class QRGenerator {
     const version = this.findOptimalVersion(text, ecLevel);
     
     // Genera il QR base
-    const qr = qrcode(version, this.EC_LEVEL_MAP[ecLevel]);
+    const qr = qrcode(version, this.getECLevel(ecLevel));
     qr.addData(text);
     qr.make();
 
@@ -45,7 +49,7 @@ export class QRGenerator {
     } else if (maskStrategy !== 'auto' && maskStrategy.match(/^[0-7]$/)) {
       // Forza maschera specifica
       const maskNum = parseInt(maskStrategy);
-      const qrMasked = qrcode(version, this.EC_LEVEL_MAP[ecLevel]);
+      const qrMasked = qrcode(version, this.getECLevel(ecLevel));
       qrMasked.addData(text);
       qrMasked.make();
       
@@ -65,7 +69,7 @@ export class QRGenerator {
   private static findOptimalVersion(text: string, ecLevel: ECLevel): number {
     for (let version = 1; version <= 40; version++) {
       try {
-        const qr = qrcode(version, this.EC_LEVEL_MAP[ecLevel]);
+        const qr = qrcode(version, this.getECLevel(ecLevel));
         qr.addData(text);
         qr.make();
         return version;
@@ -84,7 +88,7 @@ export class QRGenerator {
     // Testa tutte le maschere
     for (let mask = 0; mask < 8; mask++) {
       try {
-        const qr = qrcode(version, this.EC_LEVEL_MAP[ecLevel]);
+        const qr = qrcode(version, this.getECLevel(ecLevel));
         qr.addData(text);
         qr.make();
 
